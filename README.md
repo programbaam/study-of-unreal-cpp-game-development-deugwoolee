@@ -66,3 +66,8 @@ Resource->Chapter1->Book 을 Content 폴더로 복사
 
 Fountain.cpp에서 컴포넌트를 실제로 생성하는 로직 구현. new가 아닌 CreateDefaultSubobject API라는 함수로 생성
 루트 컴포넌트를 지정 후 자식 설정
+
+### 액터와 에디터 연동
+
+Fountain.h에서 UPROPERTY 매크로 안에 VisibleAnywhere 키워드 추가
+배치된 c++ 클래스 에셋에 스태틱 메시 컴포넌트 지정
