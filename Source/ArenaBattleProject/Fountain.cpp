@@ -11,9 +11,17 @@ AFountain::AFountain()
 
 	Body=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BODY"));
 	Water=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WATER"));
+	Light=CreateDefaultSubobject<UPointLightComponent>(TEXT("Light"));
+	Splash=CreateDefaultSubobject<UNiagaraComponent>(TEXT("SPLASH"));
 
 	RootComponent=Body;
 	Water->SetupAttachment(Body);
+	Light->SetupAttachment(Body);
+	Splash->SetupAttachment(Body);
+
+	Water->SetRelativeLocation(FVector(0.0f, 0.0f, 135.0f));
+	Light->SetRelativeLocation(FVector(0.0f, 0.0f, 195.0f));
+	Splash->SetRelativeLocation(FVector(0.0f, 0.0f, 195.0f));
 }
 
 // Called when the game starts or when spawned

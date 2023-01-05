@@ -4,6 +4,10 @@
 
 #include "EngineMinimal.h"
 #include "GameFramework/Actor.h"
+
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
 #include "Fountain.generated.h"
 
 UCLASS()
@@ -28,4 +32,11 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent *Water;
+
+	UPROPERTY(VisibleAnywhere)
+	UPointLightComponent *Light;
+
+	UPROPERTY(VisibleAnywhere)
+	UNiagaraComponent *Splash;
+	
 };

@@ -71,3 +71,18 @@ Fountain.cpp에서 컴포넌트를 실제로 생성하는 로직 구현. new가 
 
 Fountain.h에서 UPROPERTY 매크로 안에 VisibleAnywhere 키워드 추가
 배치된 c++ 클래스 에셋에 스태틱 메시 컴포넌트 지정
+
+### 액터 기능의 확장
+
+Fountain.cpp에 스태틱 메시 컴포넌트에 상대좌표위치 추가
+
+프로젝트.build.cs에서 Niagara 모듈 추가-나이가라 컴포넌트를 사용하기 위해서
+그 후 프로젝트 재구축 Generate Visual Studio project files 해준다.
+나이아가라 관련 헤더파일 추가
+포인트 라이트 컴포넌터, 나이가라 컴포넌트 클래스 포인터 추가
+추가 컴포넌트들 생성 로직 구현, 자식 설정, 위치 설정
+
+에디터 플로그인에서 Cascade To Niagara Converter 체크
+P_Water_Fountain_Splash_Base_01 우클릭 나이아가라 시스템으로 변환했으나 컴파일 문제 발생
+P_Buff_Shout_Freeze_02로 대신 사용이 에셋을 나이아가라 시스템으로 변환
+변환된 시스템으로 Fountain에 Splash 에셋 지정
