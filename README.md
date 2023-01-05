@@ -42,3 +42,27 @@ http://acornpub.co.kr/book/unreal-c#c. 예제 코드 파일 다운로드 후
 Resource->Chapter1->Book 을 Content 폴더로 복사
 새 레벨 생성, 에셋 배치
 
+
+
+## Ch2. 액터의 설계
+
+### 언리얼 콘텐츠의 구성 요소
+
+#### 월드
+
+#### 액터
+
+#### 레벨
+
+#### 컴포넌트
+
+### 액터의 설계
+
+스태틱 메시 컴포넌트를 가지기위해 Fountain.h에서 
+액터의 멤버 변수로 2개의 스태틱 메시 컴포넌트 클래스의 포인터를 추가 선언
+선언된 CoreMinimal.h(최소기능만 선언)을 EngineMinimal.h(다양한 엔진 기능 클래스 선언 모아둠) 변경
+
+선언한 객체 자동으로 관리하게 만들기 위한 UPROPERITY 매크로 객체 지정
+
+Fountain.cpp에서 컴포넌트를 실제로 생성하는 로직 구현. new가 아닌 CreateDefaultSubobject API라는 함수로 생성
+루트 컴포넌트를 지정 후 자식 설정
