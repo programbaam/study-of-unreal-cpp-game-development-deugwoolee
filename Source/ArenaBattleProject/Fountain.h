@@ -38,5 +38,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	UNiagaraComponent *Splash;
+
+	UPROPERTY(EditAnywhere, Category=ID)
+	int32 ID;
 	
 };

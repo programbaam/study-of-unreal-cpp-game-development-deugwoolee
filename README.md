@@ -86,3 +86,16 @@ Fountain.cpp에 스태틱 메시 컴포넌트에 상대좌표위치 추가
 P_Water_Fountain_Splash_Base_01 우클릭 나이아가라 시스템으로 변환했으나 컴파일 문제 발생
 P_Buff_Shout_Freeze_02로 대신 사용이 에셋을 나이아가라 시스템으로 변환
 변환된 시스템으로 Fountain에 Splash 에셋 지정
+
+### 객체 유형과 값 유형
+
+정수 유형 멤버 변수 추가
+
+
+
+VisibleAnywhere 볼 수 있음. 편집하지 못하고 읽을 수만
+
+EditAnywhere 편집 가능
+
+Category=분류명 규칙 키워드
+
