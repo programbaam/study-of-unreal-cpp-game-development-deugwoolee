@@ -120,3 +120,13 @@ Fountain.h에서 포함한 EngineMinimal.h를 게임 모듈 헤더 파일로 변
 Fountain.cpp에서 로그 남김
 
 추가로 ABLOG_S, ABLOG로 로그 매크로를 정의하고 지정하여 로그 남김
+
+### 어설션
+
+어설션Assertion은 반드시 확인하고 넘어가야 하는 점검 코드 의미
+
+### 액터의 주요 이벤트 함수
+
+EndPlay, PostInitializeComponents 함수 선언
+선언한 이벤트 함수 정의 후 함수마다 로그를 남김
+

@@ -66,3 +66,16 @@ void AFountain::Tick(float DeltaTime)
 
 }
 
+//액터 퇴장
+void AFountain::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	ABLOG_S(Warning);
+}
+
+//액터에 속한 컴포넌트 세팅 완료
+void AFountain::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	ABLOG_S(Warning);
+}
