@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "EngineMinimal.h"
+#include "ArenaBattleProject.h"
 #include "GameFramework/Actor.h"
 
 #include "NiagaraFunctionLibrary.h"
