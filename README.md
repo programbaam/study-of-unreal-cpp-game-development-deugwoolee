@@ -130,3 +130,14 @@ Fountain.cpp에서 로그 남김
 EndPlay, PostInitializeComponents 함수 선언
 선언한 이벤트 함수 정의 후 함수마다 로그를 남김
 
+### 움직이는 액터의 설계
+
+액터를 회전 시키기 위한 멤버변수 추가
+데이터 은닉을 위해 private로 만들었으나 에디터에서 접근을 위해
+UPROPERTY 매크로 메타키워드 AllowPrivateAccess 추가
+
+프레임 타임 정보인 DeltaTime을 사용하여 초당 일정한 속도로 분수대를 회전시키는 코드를
+틱 이벤트에 추가
+
+
+

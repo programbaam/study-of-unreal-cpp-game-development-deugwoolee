@@ -46,6 +46,8 @@ AFountain::AFountain()
 	{
 		Splash->SetAsset(NS_SPLASH.Object);
 	}
+
+	RotateSpeed=30.0f;
 	
 }
 
@@ -63,6 +65,7 @@ void AFountain::BeginPlay()
 void AFountain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	AddActorLocalRotation(FRotator(0.0f, RotateSpeed*DeltaTime, 0.0f));
 
 }
 
