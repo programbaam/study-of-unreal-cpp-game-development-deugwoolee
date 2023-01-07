@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ArenaBattleProject.h"
+#include "InputActionValue.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "ABPawn.generated.h"
@@ -43,5 +44,13 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	UCameraComponent* Camera;
+
+	/** MappingContext */
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	class UInputMappingContext* DefaultMappingContext;
+	
+private:
+	void UpDown(const FInputActionValue& Value);
+	void LeftRight(const FInputActionValue& Value);
 	
 };
