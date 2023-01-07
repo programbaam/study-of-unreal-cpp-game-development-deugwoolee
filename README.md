@@ -163,3 +163,26 @@ RotationMovementComponent 헤더파일 추가, 선언, 정의, 회전동작 추�
 게임 모드와 폰 생성 후 세팅
 게임모드 생성자 코드에 DefaultPawn 속성 생성한 폰으로 지정
 
+### 플레이어의 입장
+
+Possess 함수 사용해서 빌드가 되지않음. OnPossess 함수 사용
+
+4.22버전부터 OnPossess 함수 상속받도록 구조 변경됨
+
+
+
+플레이어컨트롤러 클래스 생성
+게임모드 생성자에서 플레이어컨트롤러 속성 값 생성한 클래스로 변경
+
+생성과 빙의되는 과정을 알기 위해
+게임 모드에서 플레이어 로그인 완료시 호출되는 PostLogin 선언 및 정의
+플레이어 컨트롤러에서는 PostInitializeComponents, OnPossess 선언 및 정의
+폰에서는 PostInitializeComponents, PossessedBy 선언 및 정의
+그 함수 안에 로그 매크로 추가
+
+에디터에서 삼인칭 캐릭터 블루프린트 배치 후 Auto Possess Player로 Player 0 설정
+Player 0은 로컬 플레이어 의미. 레벨에 배치된 캐릭터 블루프린테에 빙의하게 됨.
+
+
+
+수정할 때 모든 Possess 함수 변경하지 않아 에디터에서 플레이가 되지않는 문제 발생함.
