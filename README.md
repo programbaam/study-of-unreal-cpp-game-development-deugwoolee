@@ -290,5 +290,17 @@ Turn과 LookUp 동작 추가.
 캐릭터가 움직이는 방향으로 자동으로 회전시켜주는 캐릭터 무브먼트 컴포넌트의
 OrientRotationToMovement 기능 사용하여 이동방향으로 캐릭터가 회전하게 함.
 
+### 삼인칭 컨트롤 구현(디아블로 방식)
+
+클래스 내부에 Enum 열거형 선언 해 SetControlMode의 인자 값을 분리해
+현재 입력 모드를 보관할 멤버 변수 추가. 각 축의 입력을 조합해 보관할 벡터 유형의 변수 추가.
+
+축 입력 이벤트가 발생할 때 새로 선언한 DirectionToMove 멤버 변수 업데이트하고
+이후에 발생하는 Tick 로직에서 최종 멤버 변수 참고해 이동.
+기존 GTA 방식처럼 디아블로 방식도 스프링암 속성 정의. 컨트롤러의 회전 속성, 움직임 정의.
+
+UseControllerRotationYaw 속성 해제하고
+캐릭터 무브먼트의 UseControllerDesiredRotation 속성을 체크하여 부드럽게 회전시킴.
+
 
 

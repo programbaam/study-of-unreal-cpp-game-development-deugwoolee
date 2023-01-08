@@ -70,7 +70,7 @@ AABCharacter::AABCharacter()
 		DefaultMappingContext=IMC_DEFAULT_AB.Object;
 	}
 
-	SetControlMod(0);
+	SetControlMod(EControlMode::DIABLO);
 	
 }
 
@@ -97,10 +97,13 @@ void AABCharacter::BeginPlay()
 	
 }
 
-void AABCharacter::SetControlMod(int32 ControlMode)
+void AABCharacter::SetControlMod(EControlMode NewControlMode)
 {
-	if(ControlMode==0)
+	CurrentControlMode=NewControlMode;
+	
+	switch(CurrentControlMode)
 	{
+	case EControlMode::GTA:
 		SpringArm->TargetArmLength=450.0f;
 		SpringArm->SetRelativeRotation(FRotator::ZeroRotator);
 		SpringArm->bUsePawnControlRotation=true;
@@ -110,7 +113,22 @@ void AABCharacter::SetControlMod(int32 ControlMode)
 		SpringArm->bDoCollisionTest=true;
 		bUseControllerRotationYaw=false;
 		GetCharacterMovement()->bOrientRotationToMovement=true;
+		GetCharacterMovement()->bUseControllerDesiredRotation=false;
 		GetCharacterMovement()->RotationRate=FRotator(0.0f, 720.0f, 0.0f);
+		break;
+	case EControlMode::DIABLO:
+		SpringArm->TargetArmLength=800.0f;
+		SpringArm->SetRelativeRotation(FRotator(-45.0f, 0.0f, 0.0f));
+		SpringArm->bUsePawnControlRotation=false;
+		SpringArm->bInheritPitch=false;
+		SpringArm->bInheritRoll=false;
+		SpringArm->bInheritYaw=false;
+		SpringArm->bDoCollisionTest=false;
+		bUseControllerRotationYaw=false;
+		GetCharacterMovement()->bOrientRotationToMovement=false;
+		GetCharacterMovement()->bUseControllerDesiredRotation=true;
+		GetCharacterMovement()->RotationRate=FRotator(0.0f, 720.0f, 0.0f);
+		break;
 	}
 }
 
@@ -119,6 +137,16 @@ void AABCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	switch(CurrentControlMode)
+	{
+	case EControlMode::DIABLO:
+		if(DirectionToMove.SizeSquared()>0.0f)
+		{
+			GetController()->SetControlRotation(FRotationMatrix::MakeFromX(DirectionToMove).Rotator());
+			AddMovementInput(DirectionToMove);
+		}
+		break;
+	}
 }
 
 // Called to bind functionality to input
@@ -155,21 +183,47 @@ void AABCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AABCharacter::UpDown(const FInputActionValue& Value)
 {
-	AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X), Value.GetMagnitude());
+	switch(CurrentControlMode)
+	{
+	case EControlMode::GTA:
+		AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X), Value.GetMagnitude());
+		break;
+	case EControlMode::DIABLO:
+		DirectionToMove.X=Value.GetMagnitude();
+		break;
+	}
 }
 
 void AABCharacter::LeftRight(const FInputActionValue& Value)
 {
-	AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::Y), Value.GetMagnitude());
+	switch(CurrentControlMode)
+	{
+	case EControlMode::GTA:
+		AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::Y), Value.GetMagnitude());
+		break;
+	case EControlMode::DIABLO:
+		DirectionToMove.Y=Value.GetMagnitude();
+		break;
+	}
 }
 
 void AABCharacter::LookUp(const FInputActionValue& Value)
 {
-	AddControllerPitchInput(Value.GetMagnitude());
+	switch(CurrentControlMode)
+	{
+	case EControlMode::GTA:
+		AddControllerPitchInput(Value.GetMagnitude());
+		break;
+	}
 }
 
 void AABCharacter::Turn(const FInputActionValue& Value)
 {
-	AddControllerYawInput(Value.GetMagnitude());
+	switch(CurrentControlMode)
+	{
+	case EControlMode::GTA:
+		AddControllerYawInput(Value.GetMagnitude());
+		break;
+	}
 }
 
