@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ArenaBattleProject.h"
+#include "InputAction.h"
 #include "InputActionValue.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
@@ -35,6 +36,18 @@ public:
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	UCameraComponent* Camera;
 
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	UInputAction* UpDownAction;
+
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	UInputAction* LeftRightAction;
+
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	UInputAction* LookUpAction;
+
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	UInputAction* TurnAction;
+	
 	/** MappingContext */
 	UPROPERTY(VisibleAnywhere, Category = Input)
 	class UInputMappingContext* DefaultMappingContext;
@@ -42,5 +55,7 @@ public:
 private:
 	void UpDown(const FInputActionValue& Value);
 	void LeftRight(const FInputActionValue& Value);
+	void LookUp(const FInputActionValue& Value);
+	void Turn(const FInputActionValue& Value);
 	
 };

@@ -39,13 +39,37 @@ AABCharacter::AABCharacter()
 	{
 		GetMesh()->SetAnimInstanceClass(WARRIOR_ANIM.Class);
 	}
+
+	//입력 액션
+	static ConstructorHelpers::FObjectFinder<UInputAction> IA_UPDOWN_AB(TEXT("/Game/Book/Input/Actions/IA_UpDown_AB.IA_UpDown_AB"));
+	if(IA_UPDOWN_AB.Succeeded())
+	{
+		UpDownAction=IA_UPDOWN_AB.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> IA_LEFTRIGHT_AB(TEXT("/Game/Book/Input/Actions/IA_LeftRight_AB.IA_LeftRight_AB"));
+	if(IA_LEFTRIGHT_AB.Succeeded())
+	{
+		LeftRightAction=IA_LEFTRIGHT_AB.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> IA_LOOKUP_AB(TEXT("/Game/Book/Input/Actions/IA_LookUp_AB.IA_LookUp_AB"));
+	if(IA_LOOKUP_AB.Succeeded())
+	{
+		LookUpAction=IA_LOOKUP_AB.Object;
+	}
+	
+	static ConstructorHelpers::FObjectFinder<UInputAction> IA_TURN_AB(TEXT("/Game/Book/Input/Actions/IA_Turn_AB.IA_Turn_AB"));
+	if(IA_TURN_AB.Succeeded())
+	{
+		TurnAction=IA_TURN_AB.Object;
+	}
 	
 	//입력 매핑 콘텍스트
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> IMC_DEFAULT_AB(TEXT("/Game/Book/Input/IMC_Default_AB.IMC_Default_AB"));
 	if(IMC_DEFAULT_AB.Succeeded())
 	{
 		DefaultMappingContext=IMC_DEFAULT_AB.Object;
-	} 
+	}
+	
 }
 
 // Called when the game starts or when spawned
@@ -86,13 +110,25 @@ void AABCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	if(UEnhancedInputComponent* EnhancedInputComponent=CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// This calls the handler function (a UFUNCTION) by name on every tick while the input conditions are met, such as when holding a movement key down.
-		if (DefaultMappingContext->GetMapping(0).Action)
+		//입력 액션 UpDown
+		if (UpDownAction)
 		{
-			EnhancedInputComponent->BindAction(DefaultMappingContext->GetMapping(0).Action, ETriggerEvent::Triggered, this, &AABCharacter::UpDown);	
+			EnhancedInputComponent->BindAction(UpDownAction, ETriggerEvent::Triggered, this, &AABCharacter::UpDown);	
 		}
-		if (DefaultMappingContext->GetMapping(1).Action)
+		//입력 액션 LeftRight
+		if (LeftRightAction)
 		{
-			EnhancedInputComponent->BindAction(DefaultMappingContext->GetMapping(1).Action, ETriggerEvent::Triggered, this, &AABCharacter::LeftRight);
+			EnhancedInputComponent->BindAction(LeftRightAction, ETriggerEvent::Triggered, this, &AABCharacter::LeftRight);
+		}
+		//입력 액션 LookUp
+		if (LookUpAction)
+		{
+			EnhancedInputComponent->BindAction(LookUpAction, ETriggerEvent::Triggered, this, &AABCharacter::LookUp);
+		}
+		//입력 액션 Turn
+		if (TurnAction)
+		{
+			EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Triggered, this, &AABCharacter::Turn);
 		}
 	}
 	
@@ -106,5 +142,15 @@ void AABCharacter::UpDown(const FInputActionValue& Value)
 void AABCharacter::LeftRight(const FInputActionValue& Value)
 {
 	AddMovementInput(GetActorRightVector(), Value.GetMagnitude());
+}
+
+void AABCharacter::LookUp(const FInputActionValue& Value)
+{
+	AddControllerPitchInput(Value.GetMagnitude());
+}
+
+void AABCharacter::Turn(const FInputActionValue& Value)
+{
+	AddControllerYawInput(Value.GetMagnitude());
 }
 
