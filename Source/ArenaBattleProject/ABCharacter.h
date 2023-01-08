@@ -29,9 +29,14 @@ protected:
 		DIABLO
 	};
 	
-	void SetControlMod(EControlMode NewControlMode);
+	void SetControlMode(EControlMode NewControlMode);
 	EControlMode CurrentControlMode = EControlMode::GTA;
 	FVector DirectionToMove=FVector::ZeroVector;
+
+	float ArmLengthTo=0.0f;
+	FRotator ArmRotationTo=FRotator::ZeroRotator;
+	float ArmLengthSpeed=0.0f;
+	float ArmRotationSpeed=0.0f;
 	
 public:	
 	// Called every frame
@@ -57,15 +62,27 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = Input)
 	UInputAction* TurnAction;
+
+	//Multiple key Rollover, Chorded action
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	UInputAction* ViewChangeAction;
+
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	UInputAction* KeyboardModifierShiftAction;
 	
 	/** MappingContext */
 	UPROPERTY(VisibleAnywhere, Category = Input)
 	class UInputMappingContext* DefaultMappingContext;
+
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	class UInputMappingContext* KeboardMappingContext;
 	
 private:
 	void UpDown(const FInputActionValue& Value);
 	void LeftRight(const FInputActionValue& Value);
 	void LookUp(const FInputActionValue& Value);
 	void Turn(const FInputActionValue& Value);
+
+	void ViewChange();
 	
 };

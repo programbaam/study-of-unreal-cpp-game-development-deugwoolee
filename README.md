@@ -304,3 +304,11 @@ UseControllerRotationYaw 속성 해제하고
 
 
 
+### 컨트롤 설정의 변경
+
+향상된 입력은 두 개의 입력컨텍스트매핑과 Chorded Action으로 다중키 구현
+하나의 입력컨텍스트매핑과 2개의 입력액션 추가
+SetControlMode를 바꾸는 함수 추가하고 바인딩.
+
+플로트변수들과 회전변수를 추가하고 FMath::RInterpTo로 부드럽게 변하는 기능 추가.
+

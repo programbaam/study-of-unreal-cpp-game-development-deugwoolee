@@ -62,6 +62,18 @@ AABCharacter::AABCharacter()
 	{
 		TurnAction=IA_TURN_AB.Object;
 	}
+
+	//Multiple key Rollover, Chorded action
+	static ConstructorHelpers::FObjectFinder<UInputAction> IA_VIEWCHANGE_AB(TEXT("/Game/Book/Input/Actions/IA_ViewChange_AB.IA_ViewChange_AB"));
+	if(IA_VIEWCHANGE_AB.Succeeded())
+	{
+		ViewChangeAction=IA_VIEWCHANGE_AB.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> IA_KEYBOARDMODIFIERSHIFT_AB(TEXT("/Game/Book/Input/Actions/IA_KeyboardModifierShift_AB.IA_KeyboardModifierShift_AB"));
+	if(IA_KEYBOARDMODIFIERSHIFT_AB.Succeeded())
+	{
+		KeyboardModifierShiftAction=IA_KEYBOARDMODIFIERSHIFT_AB.Object;
+	}
 	
 	//입력 매핑 콘텍스트
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> IMC_DEFAULT_AB(TEXT("/Game/Book/Input/IMC_Default_AB.IMC_Default_AB"));
@@ -69,9 +81,16 @@ AABCharacter::AABCharacter()
 	{
 		DefaultMappingContext=IMC_DEFAULT_AB.Object;
 	}
-
-	SetControlMod(EControlMode::DIABLO);
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> IMC_KEYBOARD_AB(TEXT("/Game/Book/Input/IMC_Keyboard_AB.IMC_Keyboard_AB"));
+	if(IMC_KEYBOARD_AB.Succeeded())
+	{
+		KeboardMappingContext=IMC_KEYBOARD_AB.Object;
+	}
 	
+	SetControlMode(EControlMode::DIABLO);
+
+	ArmLengthSpeed=3.0f;
+	ArmRotationSpeed=10.0f;
 }
 
 // Called when the game starts or when spawned
@@ -92,20 +111,23 @@ void AABCharacter::BeginPlay()
 			
 			// Add each mapping context, along with their priority values. Higher values outprioritize lower values.
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+			Subsystem->AddMappingContext(KeboardMappingContext, 100);
+			
 		}
 	}
 	
 }
 
-void AABCharacter::SetControlMod(EControlMode NewControlMode)
+void AABCharacter::SetControlMode(EControlMode NewControlMode)
 {
 	CurrentControlMode=NewControlMode;
 	
 	switch(CurrentControlMode)
 	{
 	case EControlMode::GTA:
-		SpringArm->TargetArmLength=450.0f;
-		SpringArm->SetRelativeRotation(FRotator::ZeroRotator);
+		//SpringArm->TargetArmLength=450.0f;
+		//SpringArm->SetRelativeRotation(FRotator::ZeroRotator);
+		ArmLengthTo=450.0f;
 		SpringArm->bUsePawnControlRotation=true;
 		SpringArm->bInheritPitch=true;
 		SpringArm->bInheritRoll=true;
@@ -117,8 +139,10 @@ void AABCharacter::SetControlMod(EControlMode NewControlMode)
 		GetCharacterMovement()->RotationRate=FRotator(0.0f, 720.0f, 0.0f);
 		break;
 	case EControlMode::DIABLO:
-		SpringArm->TargetArmLength=800.0f;
-		SpringArm->SetRelativeRotation(FRotator(-45.0f, 0.0f, 0.0f));
+		//SpringArm->TargetArmLength=800.0f;
+		//SpringArm->SetRelativeRotation(FRotator(-45.0f, 0.0f, 0.0f));
+		ArmLengthTo=800.0f;
+		ArmRotationTo=FRotator(-45.0f, 0.0f, 0.0f);
 		SpringArm->bUsePawnControlRotation=false;
 		SpringArm->bInheritPitch=false;
 		SpringArm->bInheritRoll=false;
@@ -137,6 +161,15 @@ void AABCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	SpringArm->TargetArmLength=FMath::FInterpTo(SpringArm->TargetArmLength, ArmLengthTo, DeltaTime, ArmLengthSpeed);
+
+	switch(CurrentControlMode)
+	{
+	case EControlMode::DIABLO:
+		SpringArm->SetRelativeRotation(FMath::RInterpTo(SpringArm->GetRelativeRotation(), ArmRotationTo, DeltaTime, ArmRotationSpeed));
+		break;
+	}
+	
 	switch(CurrentControlMode)
 	{
 	case EControlMode::DIABLO:
@@ -176,6 +209,11 @@ void AABCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		if (TurnAction)
 		{
 			EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Triggered, this, &AABCharacter::Turn);
+		}
+		//입력 액션 ViewChange
+		if (ViewChangeAction)
+		{
+			EnhancedInputComponent->BindAction(ViewChangeAction, ETriggerEvent::Started, this, &AABCharacter::ViewChange);
 		}
 	}
 	
@@ -227,3 +265,17 @@ void AABCharacter::Turn(const FInputActionValue& Value)
 	}
 }
 
+void AABCharacter::ViewChange()
+{
+	switch(CurrentControlMode)
+	{
+	case EControlMode::GTA:
+		GetController()->SetControlRotation(GetActorRotation());
+		SetControlMode(EControlMode::DIABLO);
+		break;
+	case EControlMode::DIABLO:
+		GetController()->SetControlRotation(SpringArm->GetRelativeRotation());
+		SetControlMode(EControlMode::GTA);
+		break;
+	}
+}
