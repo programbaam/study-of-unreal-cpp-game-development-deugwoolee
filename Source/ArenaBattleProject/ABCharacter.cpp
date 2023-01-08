@@ -69,6 +69,8 @@ AABCharacter::AABCharacter()
 	{
 		DefaultMappingContext=IMC_DEFAULT_AB.Object;
 	}
+
+	SetControlMod(0);
 	
 }
 
@@ -93,6 +95,23 @@ void AABCharacter::BeginPlay()
 		}
 	}
 	
+}
+
+void AABCharacter::SetControlMod(int32 ControlMode)
+{
+	if(ControlMode==0)
+	{
+		SpringArm->TargetArmLength=450.0f;
+		SpringArm->SetRelativeRotation(FRotator::ZeroRotator);
+		SpringArm->bUsePawnControlRotation=true;
+		SpringArm->bInheritPitch=true;
+		SpringArm->bInheritRoll=true;
+		SpringArm->bInheritYaw=true;
+		SpringArm->bDoCollisionTest=true;
+		bUseControllerRotationYaw=false;
+		GetCharacterMovement()->bOrientRotationToMovement=true;
+		GetCharacterMovement()->RotationRate=FRotator(0.0f, 720.0f, 0.0f);
+	}
 }
 
 // Called every frame
@@ -136,12 +155,12 @@ void AABCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AABCharacter::UpDown(const FInputActionValue& Value)
 {
-	AddMovementInput(GetActorForwardVector(), Value.GetMagnitude());
+	AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X), Value.GetMagnitude());
 }
 
 void AABCharacter::LeftRight(const FInputActionValue& Value)
 {
-	AddMovementInput(GetActorRightVector(), Value.GetMagnitude());
+	AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::Y), Value.GetMagnitude());
 }
 
 void AABCharacter::LookUp(const FInputActionValue& Value)
