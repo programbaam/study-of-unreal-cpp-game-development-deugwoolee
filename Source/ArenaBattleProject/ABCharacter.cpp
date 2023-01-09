@@ -63,6 +63,12 @@ AABCharacter::AABCharacter()
 		TurnAction=IA_TURN_AB.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> IA_JUMP_AB(TEXT("/Game/Book/Input/Actions/IA_Jump_AB.IA_Jump_AB"));
+	if(IA_JUMP_AB.Succeeded())
+	{
+		JumpAction=IA_JUMP_AB.Object;
+	}
+	
 	//Multiple key Rollover, Chorded action
 	static ConstructorHelpers::FObjectFinder<UInputAction> IA_VIEWCHANGE_AB(TEXT("/Game/Book/Input/Actions/IA_ViewChange_AB.IA_ViewChange_AB"));
 	if(IA_VIEWCHANGE_AB.Succeeded())
@@ -91,6 +97,8 @@ AABCharacter::AABCharacter()
 
 	ArmLengthSpeed=3.0f;
 	ArmRotationSpeed=10.0f;
+	GetCharacterMovement()->JumpZVelocity=800.0f;
+	
 }
 
 // Called when the game starts or when spawned
@@ -209,6 +217,11 @@ void AABCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		if (TurnAction)
 		{
 			EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Triggered, this, &AABCharacter::Turn);
+		}
+		//입력 액션 Jump
+		if (JumpAction)
+		{
+			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AABCharacter::Jump);
 		}
 		//입력 액션 ViewChange
 		if (ViewChangeAction)

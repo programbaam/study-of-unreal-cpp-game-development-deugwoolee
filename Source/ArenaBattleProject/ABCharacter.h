@@ -63,6 +63,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Input)
 	UInputAction* TurnAction;
 
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	UInputAction* JumpAction;
+	
 	//Multiple key Rollover, Chorded action
 	UPROPERTY(VisibleAnywhere, Category = Input)
 	UInputAction* ViewChangeAction;
