@@ -19,6 +19,10 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	void PlayAttackMontage();
+
+private:
+	UFUNCTION()
+	void AnimNotify_AttackHitCheck();
 	
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Pawn, Meta=(AllowPrivateAccess=true))
