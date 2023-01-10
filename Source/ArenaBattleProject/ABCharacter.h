@@ -65,6 +65,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = Input)
 	UInputAction* JumpAction;
+
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	UInputAction* AttackAction;
 	
 	//Multiple key Rollover, Chorded action
 	UPROPERTY(VisibleAnywhere, Category = Input)
@@ -87,5 +90,6 @@ private:
 	void Turn(const FInputActionValue& Value);
 
 	void ViewChange();
+	void Attack();
 	
 };

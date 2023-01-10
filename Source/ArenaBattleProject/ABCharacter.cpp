@@ -2,6 +2,7 @@
 
 
 #include "ABCharacter.h"
+#include "ABAnimInstance.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -67,6 +68,12 @@ AABCharacter::AABCharacter()
 	if(IA_JUMP_AB.Succeeded())
 	{
 		JumpAction=IA_JUMP_AB.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> IA_ATTACK_AB(TEXT("/Game/Book/Input/Actions/IA_Attack_AB.IA_Attack_AB"));
+	if(IA_ATTACK_AB.Succeeded())
+	{
+		AttackAction=IA_ATTACK_AB.Object;
 	}
 	
 	//Multiple key Rollover, Chorded action
@@ -221,7 +228,12 @@ void AABCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		//입력 액션 Jump
 		if (JumpAction)
 		{
-			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AABCharacter::Jump);
+			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AABCharacter::Jump);
+		}
+		//입력 액션 Attack
+		if (AttackAction)
+		{
+			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AABCharacter::Attack);
 		}
 		//입력 액션 ViewChange
 		if (ViewChangeAction)
@@ -291,4 +303,12 @@ void AABCharacter::ViewChange()
 		SetControlMode(EControlMode::GTA);
 		break;
 	}
+}
+
+void AABCharacter::Attack()
+{
+	auto AnimInstance=Cast<UABAnimInstance>(GetMesh()->GetAnimInstance());
+	if(nullptr==AnimInstance) return;
+
+	AnimInstance->PlayAttackMontage();
 }
