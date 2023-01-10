@@ -465,3 +465,34 @@ Montage_IsPlaying 함수를 사용해 현재 몽타주가 재생하는 지 파�
 애니메이션 블루프린트에서 몽타주 재생노드를 애님 그래프에 추가
 캐릭터 소스코드에서 Attack 함수에서 애님인스턴스로 접근해 몽타주를 재생.
 
+### 델리게이트
+
+애님 인스턴스에 애니메이션 몽타주 재생이 끝나면 발동하는
+OnMontageEnded라는 델리게이트 제공함.
+어떤 언리얼 오브젝트라도 UAnimMontage * 인자와 bool 인자를 가진 멤버 함수를 가지면
+이를 OnMontageEnded 델리게이트에 등록해 몽타주 재생 끝나는 타이밍 파악가능.
+
+캐릭터 헤더파일에 PostInitializeComponents() 함수 선언.
+
+애님 인스턴스에 애니메이션 몽타주 재생이 끝나면 발동하는
+OnMontageEnded라는 델리게이트가 접근할 수 있게
+UFUNTION 매크로 추가 선언과 UAnimMontage * 인자와 bool 인자를 가진
+멤버 함수 추가 선언.
+bool 인자 멤버 변수로 선언.
+
+check나 ensure 어설션 대신 런타임에서 문제 발생 시
+붉은색 에러 로그를 뿌리고 바로 함수를 반환하는 매크로를 프로젝트 헤더 파일에 추가
+
+애님 인스턴스는 캐릭터 클래스에서 자주 사용하기 때문에 멤버 변수로 전방 선언
+PostInitializeComponents() 함수를 정의할 때
+매크로를 활용해 애님 인스턴스의 OnMontageEnded 델리게이트와
+선언한 OnAttackMontageEnded를 연결, 델리게이트가 발동할 때까지 애니메이션 시스템에
+몽타주 재생 명령을 내리지 못하게 폰 로직 막아줌.
+
+폰 로직에서 입력이 들어오면 애님 인스턴스의 PlayAttack을 호출하도록 로직을 추가
+
+델리게이트에 의해 공격의 시작과 종료가 감지되므로 AnimInstance에
+Montage_IsPlaying 함수 더 이상 사용하지 않는다. 
+
+
+
