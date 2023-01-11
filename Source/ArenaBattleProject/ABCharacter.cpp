@@ -3,6 +3,7 @@
 
 #include "ABCharacter.h"
 #include "ABAnimInstance.h"
+#include "DrawDebugHelpers.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -112,6 +113,9 @@ AABCharacter::AABCharacter()
 	AttackEndComboState();
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("ABCharacter"));
+
+	AttackRange=200.0f;
+	AttackRadius=50.0f;
 }
 
 // Called when the game starts or when spawned
@@ -238,11 +242,13 @@ void AABCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		if (UpDownAction)
 		{
 			EnhancedInputComponent->BindAction(UpDownAction, ETriggerEvent::Triggered, this, &AABCharacter::UpDown);	
+			EnhancedInputComponent->BindAction(UpDownAction, ETriggerEvent::Completed, this, &AABCharacter::UpDown);	
 		}
 		//입력 액션 LeftRight
 		if (LeftRightAction)
 		{
 			EnhancedInputComponent->BindAction(LeftRightAction, ETriggerEvent::Triggered, this, &AABCharacter::LeftRight);
+			EnhancedInputComponent->BindAction(LeftRightAction, ETriggerEvent::Completed, this, &AABCharacter::LeftRight);
 		}
 		//입력 액션 LookUp
 		if (LookUpAction)
@@ -390,6 +396,25 @@ void AABCharacter::AttackCheck()
 	FCollisionShape::MakeSphere(50.0f),
 	Params);
 
+#if ENABLE_DRAW_DEBUG
+
+	FVector TraceVec=GetActorForwardVector() *AttackRange;
+	FVector Center=GetActorLocation()+TraceVec*0.5f;
+	float HalfHeight=AttackRange*0.5f+AttackRadius;
+	FQuat CapsuleRot=FRotationMatrix::MakeFromZ(TraceVec).ToQuat();
+	FColor DrawColor=bResult?FColor::Green:FColor::Red;
+	float DebugLifeTime=5.0f;
+
+	DrawDebugCapsule(GetWorld(),
+		Center,
+		HalfHeight,
+		AttackRadius,
+		CapsuleRot,
+		DrawColor,
+		false,
+		DebugLifeTime);
+#endif
+	
 	if(bResult)
 	{
 		if(IsValid(HitResult.GetActor()))
