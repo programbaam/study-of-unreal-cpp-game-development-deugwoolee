@@ -222,6 +222,8 @@ void AABCharacter::PostInitializeComponents()
 			ABAnim->JumpToAttackMontageSection(CurrentCombo);
 		}
 	});
+
+	ABAnim->OnAttackHitCheck.AddUObject(this, &AABCharacter::AttackCheck);
 }
 
 // Called to bind functionality to input
@@ -373,4 +375,26 @@ void AABCharacter::AttackEndComboState()
 	IsComboInputOn=false;
 	CanNextCombo=false;
 	CurrentCombo=0;
+}
+
+void AABCharacter::AttackCheck()
+{
+	FHitResult HitResult;
+	FCollisionQueryParams Params(NAME_None, false, this);
+	bool bResult=GetWorld()->SweepSingleByChannel(
+	HitResult,
+	GetActorLocation(),
+	GetActorLocation()+GetActorForwardVector()*200.0f,
+	FQuat::Identity,
+	ECollisionChannel::ECC_GameTraceChannel2,
+	FCollisionShape::MakeSphere(50.0f),
+	Params);
+
+	if(bResult)
+	{
+		if(IsValid(HitResult.GetActor()))
+		{
+			ABLOG(Warning, TEXT("Hit ACtor Name: %s"), *HitResult.GetActor()->GetName());
+		}
+	}
 }
