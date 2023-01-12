@@ -137,13 +137,7 @@ AABCharacter::AABCharacter()
 void AABCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	FName WeaponSocket(TEXT("hand_rSocket"));
-	auto CurWeapon=GetWorld()->SpawnActor<AABWeapon>(FVector::ZeroVector, FRotator::ZeroRotator);
-	if(nullptr!=CurWeapon)
-	{
-		CurWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
-	}
+	
 
 	//Add Input Mapping Context
 
@@ -314,6 +308,23 @@ void AABCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		}
 	}
 	
+}
+
+bool AABCharacter::CanSetWeapon()
+{
+	return (nullptr==CurrentWeapon);
+}
+
+void AABCharacter::SetWeapon(AABWeapon* NewWeapon)
+{
+	ABCHECK(nullptr!=NewWeapon&&nullptr==CurrentWeapon);
+	FName WeaponSocket(TEXT("hand_rSocket"));
+	if(nullptr!=NewWeapon)
+	{
+		NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+		NewWeapon->SetOwner(this);
+		CurrentWeapon=NewWeapon;
+	}
 }
 
 void AABCharacter::UpDown(const FInputActionValue& Value)
