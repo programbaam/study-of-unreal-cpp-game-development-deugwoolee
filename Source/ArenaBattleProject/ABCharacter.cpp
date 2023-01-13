@@ -4,6 +4,7 @@
 #include "ABCharacter.h"
 #include "ABAnimInstance.h"
 #include "ABWeapon.h"
+#include "ABCharacterStatComponent.h"
 #include "DrawDebugHelpers.h"
 
 #include "EnhancedInputComponent.h"
@@ -23,6 +24,8 @@ AABCharacter::AABCharacter()
 
 	SpringArm->SetupAttachment(GetCapsuleComponent());
 	Camera->SetupAttachment(SpringArm);
+
+	CharacterStat=CreateDefaultSubobject<UABCharacterStatComponent>(TEXT("CHARACTERSTAT"));
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -88.0f), FRotator(0.0f, -90.0f, 0.0f));
 	SpringArm->TargetArmLength=400.0f;
@@ -244,6 +247,15 @@ void AABCharacter::PostInitializeComponents()
 	});
 
 	ABAnim->OnAttackHitCheck.AddUObject(this, &AABCharacter::AttackCheck);
+
+	CharacterStat->OnHPIsZero.AddLambda([this]()->void
+	{
+		
+		ABLOG(Warning, TEXT("OnHPIsZero"));
+		ABAnim->SetDeadAnim();
+		SetActorEnableCollision(false);
+		
+	});
 }
 
 float AABCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
@@ -252,12 +264,9 @@ float AABCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	float FinalDamage=Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	ABLOG(Warning, TEXT("Actor : %s took Damage : %f"), *GetName(), FinalDamage);
 
-	if(FinalDamage>0.0f)
-	{
-		ABAnim->SetDeadAnim();
-		SetActorEnableCollision(false);
-	}
 	
+
+	CharacterStat->SetDamage(FinalDamage);
 	return FinalDamage;
 }
 
@@ -470,7 +479,7 @@ void AABCharacter::AttackCheck()
 			ABLOG(Warning, TEXT("Hit ACtor Name: %s"), *HitResult.GetActor()->GetName());
 
 			FDamageEvent DamageEvent;
-			HitResult.GetActor()->TakeDamage(50.0f, DamageEvent, GetController(), this);
+			HitResult.GetActor()->TakeDamage(CharacterStat->GetAttack(), DamageEvent, GetController(), this);
 		}
 	}
 }
