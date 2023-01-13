@@ -821,3 +821,77 @@ UMG 모듈을 추가.
 위젯의 위치와 위젯 모드를 설정.
 위젯 컴포넌트에 에셋을 지정하고 크기를 정함.
 
+### UI와 데이터의 연동
+
+UesrWidget을 부모로 삼는 C++ 클래스 생성
+
+-스탯컴포넌트 헤더파일에서
+멀티캐스트 딜리게이트 FOnHPChangedDelgate 선언
+인자값으로 현재 피를 만드는 SetHP 선언
+현재 체력/최대 체력 비율을 반환하는 GetHPRatio 선언
+FOnHPChangedDelgate를 OnHPChanged로 선언
+
+
+
+-스탯컴포넌트 소스코드에서
+기존 SetNewLevel, SetDamage 함수들
+SetHP 이용하여 체력관리로 변경.
+
+SetHP 함수 정의
+현재 체력을 인자값으로 바꾸고
+OnHPChanged 브로드캐스트 호출
+0과 비교할 때 미세한 오차범위 사실상 0인 
+KINDA_SMALL_NUMBER 보다 작으면
+OnHPIsZero 브로드 캐스트하고 현재 체력 0으로 만듬.
+
+GetHPRatio 함수 정의
+현재 체력/최대 체력 비율을 반환
+
+
+
+-캐릭터 위젯 헤더파일에서
+위젯에서 캐릭터의 스텟을 사용할 수 있고 체력이 바뀔시 
+HPRatio 업데이트할 것을 델리게이트에 바인딩하는 로직이 있는
+BindCharacterStat 함수 선언
+
+UI 시스템이 준비되면 호출되는 NativeConstruct 함수 선언
+UI는 PostInitializeComponent 함수에서 발생한 명령 반영하지 않는다.
+
+NativeConstruct 함수 내에서 위젯 내용을 
+업데이트하는 로직을 구현하기 위한 UpdateHPWidget 함수 선언.
+
+클래스스탯 컴포넌트 접근할 TWeakObjectPtr 약 포인터 선언
+UI와 캐릭터가 서로 다른 액터일 경우를 위해서.
+
+프로그레스바를 다루기 위한 변수 선언.
+
+
+
+-캐릭터 위젯 소스코드에서
+BindCharacterStat 함수 정의
+현재캐릭터스탯을 받아온 인자값으로 바꾸고
+OnHPChanged 델리게이트에 위젯을 업데이트 함수를 바인딩함.
+
+NativeConstruct 함수정의
+부모 생성자 호출
+프로그레스 바를 지정
+위젯을 업데이트함.
+
+UpdateHPWidget 함수 정의
+현재캐릭터스텟이 존재하고
+프로그레스바가 널이 아니라면
+캐릭터스텟에서 구한 체력 비율로
+프로그레스바의 퍼센트를 세팅한다.
+
+-캐릭터 클래스 소스코드에서
+기존에 생성자에서 무기 장착 코드 지우고
+그 안에 있는 위젯의 클래스 지정 코드 밖으로 빼냄.
+
+비긴플레이 함수 코드에
+HPBar위젯의 BindCharaterStat 호출
+:여기서 문제 발생햇음.
+PostInitializeComponents()에 추가 할 시 위젯의 초기화 시점은 BeginPlay로 변경되어
+널을 가르켜 바인딩이 안되는 문제 발생.
+
+
+
