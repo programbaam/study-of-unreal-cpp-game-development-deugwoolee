@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Engine/DamageEvents.h"
 
 // Sets default values
@@ -22,10 +23,14 @@ AABCharacter::AABCharacter()
 	SpringArm=CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRIMGARM"));
 	Camera=CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
 
+	CharacterStat=CreateDefaultSubobject<UABCharacterStatComponent>(TEXT("CHARACTERSTAT"));
+	HPBarWidget=CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBARWIDGET"));
+
 	SpringArm->SetupAttachment(GetCapsuleComponent());
 	Camera->SetupAttachment(SpringArm);
+	HPBarWidget->SetupAttachment(GetMesh());
 
-	CharacterStat=CreateDefaultSubobject<UABCharacterStatComponent>(TEXT("CHARACTERSTAT"));
+	
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -88.0f), FRotator(0.0f, -90.0f, 0.0f));
 	SpringArm->TargetArmLength=400.0f;
@@ -117,6 +122,15 @@ AABCharacter::AABCharacter()
 		}
 
 		Weapon->SetupAttachment(GetMesh(), WeaponSocket);
+
+		HPBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
+		HPBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+		static ConstructorHelpers::FClassFinder<UUserWidget> UI_HUD(TEXT("/Game/Book/UI/UI_HPBar.UI_HPBar_C"));
+		if(UI_HUD.Succeeded())
+		{
+			HPBarWidget->SetWidgetClass(UI_HUD.Class);
+			HPBarWidget->SetDrawSize(FVector2D(150.0f, 50.0f));
+		}
 	}
 	
 	SetControlMode(EControlMode::DIABLO);
