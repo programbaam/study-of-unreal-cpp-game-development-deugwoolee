@@ -10,6 +10,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "ABCharacter.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnAttackEndDelegate);
+
 UCLASS()
 class ARENABATTLEPROJECT_API AABCharacter : public ACharacter
 {
@@ -70,6 +72,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category=UI)
 	class UWidgetComponent* HPBarWidget;
 
+	void Attack();
+	FOnAttackEndDelegate OnAttackEnd;
+
 	UPROPERTY(VisibleAnywhere, Category = Input)
 	UInputAction* UpDownAction;
 
@@ -109,7 +114,7 @@ private:
 	void Turn(const FInputActionValue& Value);
 
 	void ViewChange();
-	void Attack();
+	
 
 	UFUNCTION()
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);

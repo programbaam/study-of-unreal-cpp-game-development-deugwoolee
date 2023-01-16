@@ -1021,3 +1021,32 @@ NPC일때 회전비율 등 세팅.
 -비헤이비어 트리에서 셀렉터 추가 후 타겟을 향해 무브 투 하는 시퀀스와 테스크 추가(기존 시퀀스보다 우선)
 Detect 서비스 추가, 각 시퀀스에 블랙보드 데코레이터 추가 후 블랙보드 키, 관찰자 등 디테일 설정.
 
+### NPC의 공격
+
+-캐릭터 헤더파일에서
+FOnAttackEndDelegate 멀티캐스트 듀플리케이트 선언-어택 종료시 브로드캐스트하기 위해
+FOnAttackEndDelegate를 OnAttackEnd로 선언하고 Attack()로 같이 public으로 옮겨줌.-다른 클래스에서 접근하기 호출하기 위해
+-소스코드에서
+OnAttackMontageEnded함수에서
+함수 안에서 끝에 OnAttackEnd.Broadcast() 공격몽타주가 끝나면 브로드캐스트.
+
+-BTDecorator를 부모로 하는 BTDecorator_IsInAttackRange C++ 클래스 생성
+헤더파일에서 생성자 선언, CalculateRawConditionValue 함수 선언
+소스코드에서 생성자에서 노드이름 지정.
+CalculateRawConditionValue 함수
+공격 범위 내에 있는 판단하는 코드 구현.
+
+-BTTaskNode를 부모로하는 BTTask_Attack C++ 클래스 생성
+헤더파일에서 생성자 선언, 실행테스크선언 함수선언, 틱태스크선언. 부울 변수 IsAttacking=false 선언 및 정의.
+소스코드에서 생성자에서 bNotifyTick 트루, IsAttacking false,
+실행 태스크에서 캐릭터 공격함수 실행, 공격중 트루, 공격끝나면델리게이트에 람다식 공격중 false 바인딩 하고 인프로그래스 리턴.
+틱태스크에서 공격중이 아니면 석시드함.
+
+-BTTaskNode를 부모로하는 BTTask_TurnToTarget C++ 클래스 생성
+헤더파일에서 생성자 선언, 실행 테스크 함수 선언.
+소스코드에서 생성자에서 노드이름 지정.
+실행 태스크에서 타겟의 현재 위치에서 내 위치를 이용해서
+쳐다봐야할 회전 값을 구해서 회전함.
+
+-비헤이비어트리에서 컴포짓과 태스크와 데코레이터를 이용해서
+마저 구현.
