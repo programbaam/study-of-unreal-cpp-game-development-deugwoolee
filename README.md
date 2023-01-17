@@ -1050,3 +1050,20 @@ CalculateRawConditionValue 함수
 
 -비헤이비어트리에서 컴포짓과 태스크와 데코레이터를 이용해서
 마저 구현.
+
+
+
+## Ch13. 프로젝트 설정과 무한 맵의 제작
+
+### 프로젝트의 정리와 모듈의 추가
+
+프로젝트 폴더로 이동하여 소스/프로젝트 폴더에서 .cpp 파일은 Private 폴더, .h 파일은 Public폴더들 생성 후 모두 옮김.
+비주얼 스튜디오 프로젝트 파일 재성성.
+
+별도의 게임 모듈을 위해 예제 코드 파일에서 ArenaBattleSetting 모듈 폴더 가져와 소스 폴더로 옮김.
+프로젝트.Taget.cs, 프로젝트Editor.Target.cs 파일에 모듈 이름 추가. 
+프로젝트.uproject에도 모듈 추가 후 PreDefault로 설정.
+
+에디터에서 Object를 부모로 같는 C++ ArenaBattleSetting 클래스를 생성하여
+ArenaBattleSetting 모듈로 지정하여 생성. 
+
