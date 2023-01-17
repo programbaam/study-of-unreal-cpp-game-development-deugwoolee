@@ -10,5 +10,7 @@ public class ArenaBattleProject : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", 
 		"EnhancedInput", "Niagara", "UMG", "NavigationSystem", "AIModule", "GameplayTasks" });
+		
+		PrivateDependencyModuleNames.AddRange(new string[] {"ArenaBattleSetting"});
 	}
 }

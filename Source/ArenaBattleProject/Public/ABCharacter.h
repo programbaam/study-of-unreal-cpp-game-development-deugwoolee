@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ArenaBattleProject.h"
+	#include "ArenaBattleProject.h"
 #include "InputAction.h"
 #include "InputActionValue.h"
 #include "Camera/CameraComponent.h"
@@ -122,6 +122,8 @@ private:
 	void AttackStartComboState();
 	void AttackEndComboState();
 	void AttackCheck();
+
+	void OnAssetLoadCompleted();
 	
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category=Attack, Meta=(AllowPrivateAccess=true))
@@ -147,5 +149,8 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category=Attack, Meta=(AllowPrivateAccess=true))
 	float AttackRadius;
+
+	FSoftObjectPath CharacterAssetToLoad=FSoftObjectPath(nullptr);
+	TSharedPtr<struct FStreamableHandle> AssetStreamingHandle;
 	
 };

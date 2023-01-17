@@ -1067,3 +1067,40 @@ CalculateRawConditionValue 함수
 에디터에서 Object를 부모로 같는 C++ ArenaBattleSetting 클래스를 생성하여
 ArenaBattleSetting 모듈로 지정하여 생성. 
 
+### INI 설정과 애셋의 지연 로딩
+
+-Config 폴더에 예제코드 제공한 ini 파일 추가
+
+-ABCharacterSetting 헤더파일에서 UCLASS 매크로 config 키워드 추가-불러들일 INI 파일 지정
+생성자 선언, 애셋 경로 정보를 보관하기 위해 TArray<FSoftObjectPath> 클래스 CharacterAssets 선언-속성 config 선언.
+-소스코드에서 생성자 정의.-함수만 구현하고 아무것도 구현하지 않음
+
+-빌드 설정(프로젝트.Build.cs)에서 Private 폴더에서 모듈 사용하도록 PrivateDependencyModule 항목 추가.
+
+-ABGameInstance.h 헤더파일에서
+게임 진행 중 비동기 방식으로 애셋을 로딩하는 FStreamableManager 선언.
+
+-ABCharacter.h 헤더파일에서
+FStremableDelegate 로딩 완료시 호출하기 위한 연동할 OnAssetLoadCompleted 함수 선언.
+애셋 경로 정보를 보관하기 위한 FSoftObjectPath 클래스 타입 변수 널로 선언 및 정의.
+스레드에 안전하고 C++ 객체를 참조 카운팅하는  TShardPtr 클래스
+비동기또는 동기 로드하는 핸들 (로드된 에셋 메모리 유지하는 )FStreamableHandle클래스
+TShardPtr<strunct FStreambleHandle>타입 변수 선언.
+
+-ABCharacter.cpp 소스코드에서
+캐릭터세팅 헤더파일 포함하고
+생성자에 캐릭터세팅에서 가져온 에셋 경로 목록 호출,
+
+비긴플레이 함수에서 플레이어가 컨트롤 중이지 않으면
+세팅에서 랜덤한 캐릭터에셋 가져와 게임인스턴스가 널이 아닐시
+메모리를 유지하는 핸들 변수 AssetStreamingHandle에 
+게임 에셋을 로딩하는 StreambleManager를 이용하여
+비동기방식으로 에셋을 로딩하는 AsyncLoad 함수를 명령하고
+(해당 함수에 FStremableDelegate 형식의 델리게이트 넘겨줄 경우, 로딩 완료하면 해당 델리게이트 연결된 함수 호출)
+(또는 CreateUObject 명령을 사용해 즉석에서 델리게이트 생성함으로써 함수와 연동시킨 후 넘겨주기도 가능)
+AsyncLoad 요청하고  FStremableDelegate 형식 즉석에서 만듬. 연동할 함수는 OnAssetLoadCompleted로 함.
+
+OnAssetLoadCompleted 함수 정의
+메모리 유지한 핸들로 로드된 에셋 가져오고
+핸들을 리셋하고 로드된 에셋이 널이 아니면 스켈레탈메시 로드된 에셋으로 지정.
+

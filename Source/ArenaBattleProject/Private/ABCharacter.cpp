@@ -9,6 +9,8 @@
 #include "ABCharacterStatComponent.h"
 #include "ABCharacterWidget.h"
 #include "DrawDebugHelpers.h"
+#include "ABCharacterSetting.h"
+#include "ABGameInstance.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -143,6 +145,15 @@ AABCharacter::AABCharacter()
 
 	AIControllerClass=AABAIController::StaticClass();
 	AutoPossessAI=EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	auto DefaultSetting=GetDefault<UABCharacterSetting>();
+	if(DefaultSetting->CharacterAssets.Num()>0)
+	{
+		for(auto CharacterAsset:DefaultSetting->CharacterAssets)
+		{
+			ABLOG(Warning, TEXT("Character Asset : %s"), *CharacterAsset.ToString());
+		}
+	}
 }
 
 // Called when the game starts or when spawned
@@ -150,30 +161,45 @@ void AABCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-
-	//Add Input Mapping Context
-
-	// Make sure that we have a valid PlayerController
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	if(!IsPlayerControlled())
 	{
-		// Get the Enhanced Input Local Player Subsystem from the Local Player related to our Player Controller.
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		auto DefaultSetting=GetDefault<UABCharacterSetting>();
+		int RandIndex=FMath::RandRange(0, DefaultSetting->CharacterAssets.Num()-1);
+		CharacterAssetToLoad=DefaultSetting->CharacterAssets[RandIndex];
+
+		auto ABGameInstance=Cast<UABGameInstance>(GetGameInstance());
+		if(nullptr!=ABGameInstance)
 		{
-			// PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings.
-			Subsystem->ClearAllMappings();
-			
-			// Add each mapping context, along with their priority values. Higher values outprioritize lower values.
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-			Subsystem->AddMappingContext(KeboardMappingContext, 100);
-			
+			AssetStreamingHandle=ABGameInstance->StreamableManager.RequestAsyncLoad(CharacterAssetToLoad, FStreamableDelegate::CreateUObject(this, &AABCharacter::OnAssetLoadCompleted));
 		}
 	}
-	
+	else
+	{
+		//Add Input Mapping Context
+
+		// Make sure that we have a valid PlayerController
+		if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+		{
+			// Get the Enhanced Input Local Player Subsystem from the Local Player related to our Player Controller.
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+			{
+				// PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings.
+				Subsystem->ClearAllMappings();
+			
+				// Add each mapping context, along with their priority values. Higher values outprioritize lower values.
+				Subsystem->AddMappingContext(DefaultMappingContext, 0);
+				Subsystem->AddMappingContext(KeboardMappingContext, 100);
+			
+			}
+		}
+	}
+		
 	auto CharacterWidget=Cast<UABCharacterWidget>(HPBarWidget->GetUserWidgetObject());
 	if(nullptr!=CharacterWidget)
 	{
 		CharacterWidget->BindCharaterStat(CharacterStat);
 	}
+		
 }
 
 void AABCharacter::SetControlMode(EControlMode NewControlMode)
@@ -519,5 +545,15 @@ void AABCharacter::AttackCheck()
 			FDamageEvent DamageEvent;
 			HitResult.GetActor()->TakeDamage(CharacterStat->GetAttack(), DamageEvent, GetController(), this);
 		}
+	}
+}
+
+void AABCharacter::OnAssetLoadCompleted()
+{
+	USkeletalMesh* AssetLoaded=Cast<USkeletalMesh>(AssetStreamingHandle->GetLoadedAsset());
+	AssetStreamingHandle.Reset();
+	if(nullptr!=AssetLoaded)
+	{
+		GetMesh()->SetSkeletalMesh(AssetLoaded);
 	}
 }
