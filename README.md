@@ -1104,3 +1104,77 @@ OnAssetLoadCompleted 함수 정의
 메모리 유지한 핸들로 로드된 에셋 가져오고
 핸들을 리셋하고 로드된 에셋이 널이 아니면 스켈레탈메시 로드된 에셋으로 지정.
 
+[[UE4\] 스마트포인터 - TSharedPtr, TWeakPtr, TUniquePtr (tistory.com)](https://devjino.tistory.com/254)
+
+[FStreamableHandle | Unreal Engine 5.1 Documentation](https://docs.unrealengine.com/5.1/en-US/API/Runtime/Engine/Engine/FStreamableHandle/)
+
+http://egloos.zum.com/sweeper/v/3208656
+
+### 무한 맵의 생성
+
+액터 클래스를 부모로 갖는 C++ ABSection 클래스 생성
+-헤더 파일에서
+생성된 틱 함수 지움,
+생성자 선언, 
+OnConstruction 함수 선언, BeginPlay 함수 선언,
+enum 클래스 ESectionState라 이름 짓고 uint8 타입으로 READY, BATTLE, COMPLETE 생성.
+SetState 함수 선언, ESectionState 타입 CurrentState 선언 후 READY로 정의
+OnTriggerBeginOverlap 함수 선언, OnGateTriggerBegineOverlap 함수 선언,
+스태틱메시컴포넌트 배열 GateMeshes 선언, 박스컴포넌트 배열 GateTriggers 선언,
+스태틱메시컴포넌트 Mesh 선언, 박스컴포넌트 Trigger 선언
+부울 bNoBattle 변수 선언.
+
+-소스코드에서
+생성자에서 틱을 사용하지 않는다.
+스태틱메시 Mesh에 에셋 지정하고 루트컴포넌트로 지정.
+박스컴포넌트 Trigger의 스태틱메시 크기만큼 늘리고
+콜리전 프리셋은 ABTrigger(캐릭터에만 반응함)
+이 컴포넌트와 겹침 발생시 OnTriggerBeginOverlap 함수 호출하게 바인딩.
+게이트에셋을 콘스트럭터헬퍼 오브젝트파인더로 찾아놓음.
+스태틱메시 Mesh에 해당 소켓에
+게이트 에셋을 지정하고 추가하고 이 메시들을  GateMeshes 배열에도 추가,
+소켓마다 박스컴포넌트 또한 추가하고 콜리전 프리셋은 ABTrigger(캐릭터에만 반응함)
+GateTriggers 배열에도 추가 이 컴포넌트와 겹침 발생시 
+OnGateTriggerBegineOverlap 함수 호출하게 바인딩하고 
+어떤 문(소켓)에 있는 컴포넌트인지 구분하도록 컴포넌트에 소켓 이름으로 태그를 설정.
+bNoBattle=false로 지정.
+
+에디터 작업에서 액터의 속성이나 트랜스폼 정보가 변경될 때 실행되는 OnConstruction 함수 정의
+부모함수 호출 후
+bNoBattle이 true면 COMPLETE 상태로 세팅하고 false면 READY 상태로 세팅한다.
+
+BeginPlay 함수 정의
+부모함수 호출하고
+bNoBattle이 true면 COMPLETE 상태로 세팅하고 false면 READY 상태로 세팅한다.
+
+SetState 함수 정의
+세팅할 상태가
+READY이면 
+트리거의 콜리전 프리셋은 ABTrigger로 하고
+게이트들의 콜리전 프리셋은 NoCollision으로 세팅하고
+게이트의 문을 연다.
+BATTLE이면 
+트리거의 콜리전 프리셋은 NoCollision로 하고
+게이트들의 콜리전 프리셋은 NoCollision으로 세팅하고
+게이트의 문을 닫는다.
+COMPLETE이면 
+트리거의 콜리전 프리셋은 NoCollision로 하고
+게이트들의 콜리전 프리셋은 ABTrigger으로 세팅하고
+게이트의 문을 연다.
+현재 상태를 세팅할 상태로 바꾼다.
+
+OperateGates 함수 정의
+bOpen이 true면 게이트 메시들을 90도 회전 시켜 문열고
+false면 제로 회전 값을 넣어 문을 닫는다. 
+
+OnTriggerBeginOverlap 함수 정의
+현재 상태가 READY 상태면
+BATTLE 상태로 바뀐다.
+
+OnGateTriggerBeginOverlap 함수 정의
+정확하지는 않으나
+컴포넌트 태그로 소켓의 이름과 좌표를 추출하고
+해당 좌표로 월드의 OverlapMultiByObjectType을 실시하여
+충돌하는게 없다면 bResult가 false가 되어
+bResult가 false면 섹션 엑터 생성.
+
