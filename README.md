@@ -1194,3 +1194,89 @@ SetState 함수에서 BATTLE 상태에
 
 OnNPCSpawn 함수
 월드에 AABCharacter 액터를 섹션 액터 위에 회전없이 생성.
+
+프로젝트 세팅>엔진>내비게이션 메시>런타임>런타임 생성>드롭다운리스트 Dynamic으로 변경.
+
+
+
+## Ch14. 게임플레이 제작
+
+### 캐릭터의 스테이트 설정
+
+-프로젝트명 헤더파일에서
+캐릭터의 스테이트를 구분할 enum 클래스 ECharacterState : uint8 선언하고
+PREINT, LOADING, READY, DEAD 지정.
+
+-ABAIController.h 헤더파일에서
+RunAI 함수 선언, StopAI 함수 선언.
+
+-ABAIController.cpp 소스코드에서
+스테이트에 맞게 비헤이비어 트리 로직을 수동으로 구동하고 중지할 수 있게 구조 변경
+OnPossess 함수에서 블랙보드 관련 부분지움. 함수에 부모함수 호출만 남긴다.
+RunAI 함수
+기존 Possess 함수에 있던 블랙보드 이용해서 비헤비어트리 동작하는 부분을 여길로 옮겨 정의.
+StopAI 함수
+호출시 비헤이비어트리 컴포넌트를 멈추게함.
+
+-ABCharacter.h 헤더파일에서
+스테이트 머신 제작을 위한 SetCharacterState 함수선언, GetCharacterState 함수선언,
+인트형 AssetIndex=0 변수 선언 및 정의
+현재 캐릭터 상태를 나타내는 ECharacterState 타입 CurrentState 변수 선언 
+bIsPlayer 부울 변수 선언
+AI컨트롤러 타입 ABAIController 선언
+플레이어컨트롤러타입 ABPlayerController 선언
+실수형 DeadTimer 선언
+타임핸들 DeadTimerHandle 선언
+
+-ABCharacter.cpp 소스코드에서
+생성자에서 AssetIndex는 4로
+캐릭터 액터와 체력바 위젯을 숨기고 데미지는 받지 않게 설정하고
+DeadTimer를 5로 지정.
+
+PostInitializeComponets 함수
+캐릭터스텟 OnHPIsZero 델리게이트에 람다식 바인딩함수를 뺀다.
+
+PossessedBy 함수
+플레이어가 컨트롤중이면 컨트롤모드와 캐릭터의 속도를 결정하는 로직을 뺀다. 
+
+SetCharacterState 함수
+우선 현재 상태를 세팅할 상태로 바꾸고
+
+로딩상태라면
+플레이어라면 입력을 불가능하게 만든다.
+캐릭터와 HP바를 숨기고 데미지를 못받게 만든다.
+
+레디상태라면
+캐릭터와 HP바를 보이게하고
+데미지를 받을 수 있게 한후
+기존 PostInitializeComponets 함수에서 뺀 코드를 수정하여
+OnHPIsZero(체력이 0이면 호출되는) 델리게이트에
+데드 상태로 세팅하는 람다식을 바인딩한 후
+위젯에 캐릭터스텟을 바인딩한다.
+PossessedBy 함수에서 뺀 플레이어 여부에 따른 컨트롤모드와 속도 결정 로직을
+추가한다.
+
+데드 상태라면
+콜리전을 이용못하게하고 메시는 그대로 보이게하고
+HP바는 숨기고 죽는애니메이션을 진행시키고 데미지를 받을 수 없게한 후
+플레이어라면 입력을 못하게하고 AI컨트롤러면 StopAI를 호출하게 한다.
+또 월드에서 타임매니져를 가져와 DeadTimeHandle로 람다식을 동작하게 하는데
+플레이어라면 레벨을 리스타트하고 아니라면 액터를 제거한다. 시간은 DeadTimer이후로 진행하고 반복하지 않는다.
+
+
+GetCharacterState 함수
+현재 상태를 반환해준다.
+
+BeginPlay 함수
+기존 구조를 수정한다
+플레이어라면 플레이어 컨트롤러를 ABPlayerController로 현재 컨트롤러에서 형변환해서 지정하고 입력매핑을 진행하고
+아니라면 ABAIController를 현재 컨트롤러에서 현변환해서 지정한다.
+플레이어라면 에셋인덱스를 4번으로하고 아니면 인덱스를 랜덤으로 정한다.
+지정한 인덱스를 토대로 캐릭터 에셋을 로드하고 캐릭터상태를 로딩으로 세팅한다.
+위젯에 캐릭터스텟을 바인딩하는 코드를 빼준다.
+
+OnAssetLoadCompleted 함수
+에셋이 로드됬는지 널 체크하는 로그 추가, 기존 로드되는 코드 이후 캐릭터상태를 레디로 세팅하는 코드 추가.
+
+
+
