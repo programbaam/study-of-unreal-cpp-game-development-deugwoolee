@@ -1178,3 +1178,19 @@ OnGateTriggerBeginOverlap 함수 정의
 충돌하는게 없다면 bResult가 false가 되어
 bResult가 false면 섹션 엑터 생성.
 
+### 내비게이션 메시 시스템 설정
+
+-ABSection.h 헤더파일에서
+NPC 액터를 생성하는 OnNPCSpawn 함수 선언, 
+스폰시간을 담을 float 타입 EnemySpawnTime, ItemBoxSpawnTime 변수 선언
+타이머에서 구분하기 위한 핸들 FTimerHandle 타입 SpawnNPCTimerHandle, SpawnItemBoxTimerHandle 선언
+
+-ABSection.cpp 소스코드에서
+생성자에서 EnemySpawnTime, ItemBoxSpawnTime 시간 지정.
+
+SetState 함수에서 BATTLE 상태에
+월드 타임 매니저에 바인딩할 스폰 함수을 지정하거나 생성하고 시간 지정 반복하지는 않는다.
+아이템 생성은 람다식으로 바로 만듬. NPC는 OnNPCSpawn 함수로 지정. 
+
+OnNPCSpawn 함수
+월드에 AABCharacter 액터를 섹션 액터 위에 회전없이 생성.
