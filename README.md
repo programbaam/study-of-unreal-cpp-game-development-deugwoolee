@@ -1280,3 +1280,108 @@ OnAssetLoadCompleted 함수
 
 
 
+### 플레이어 데이터와 UI 연동
+
+플레이어의 정보를 관리하기 위한
+부모를 PlayerState 클래스로 갖는 C++ ABPlayerState 생성 
+-ABPlayerState.h 헤더파일에서
+멀티캐스트 델리게이트 FOnPlayerStateChangedDelegate 선언
+생성자 선언, GetGameScore 선언, GetCharacterLevel 함수 선언,
+GetExpRatio 함수 선언, AddExp 함수 선언, InitPlayerData 함수 선언,
+FOnPlayerStateChangedDelegate를 OnPlayerStateChanged 선언,
+int32타입 게임 진행상황을 기록하도록 GameScore, CharacterLevel, Exp 변수 선언
+SetCharacterLevel 함수 선언, (게임인스턴스에 선언된)구조체 FABCharacterData 타입 CurrentStatData 선언.
+
+-ABPlayerState.cpp 소스코드에서
+생성자에서 캐릭터레벨 1로 게임스코어와 경험치는 0으로 한다.
+GetGameScore 함수 게임스코어를 반환.
+GetCharacterLevel 함수 캐릭터레벨을 반환.
+GetExpRatio 함수 현재 경험치와 현재캐릭터스텟이 가르치는 다음경험치량 비율을 반환.
+AddExp 함수 
+현재 경험치에 인자값 경험치를 더하고
+다음경험치량을 넘을시 현재 경험치는 다음 경험치량 만큼 뺀 후
+레벨을 하나올려 세팅하고 레벨업여부를 트루로하고 
+OnPlayerStateChanged(캐릭터 상태변화)를 브로드캐스트 후
+레벨업여부를 반환한다.
+SetCharacterLevel 함수
+현재스텟데이터를 게임인스턴스에서 가져온 해당 인자값 레벨에 데이터로 바꾸고
+현재레벨을 인자값으로 바꾼다. 
+InitPlayerData 함수(플레이어 데이터 초기화함수)
+플레이어이름은 Destiny로 지정, 캐릭터레벨은 5로 지정,
+게임스코어와 경험치는 0으로한다.
+
+
+-ABGameMod.cpp 소스코드에서
+생성자에서 PlayerStateClass를 AABPlayerStat::StaticClass()로 지정.
+PostLogin 함수에서 기존 로그들 지우고
+플레이어의 인자값이 들어오면 그 플레이어의 플레이어 데이터를 초기값을 세팅하는
+InitPlayerData 호출.
+
+
+예제코드 리소스에서 UI_HUD.uasset 콘텐츠에 넣고
+부모로 UserWidget클래스를 삼는 C++ ABHUDWidget 클래스 생성 후 
+UI_HUD 클래스 세팅에서 부모 클래스를 ABHUDWidget로 변경한다.
+
+
+-ABHUDWidget.h 헤더파일에서
+BindCharacterStat 함수 선언, BindPlayerState 함수 선언
+NativeConstruct 함수 선언, UpdateCharacterStat 함수 선언, UpdatePlayerState 함수 선언,
+TWeakObjectPtr UABCharacterStatComponent 타입 CurrentCharacterStat 변수 선언,
+TWeakObjectPtr AABPlayerState 타입 CurrentPlayerState 변수 선언,
+프로그레스바 타입 HPBar, ExpBar 선언,
+텍스트블록 타입 PlayerName, PlayerLevel, CurrentScore, HighScore 선언.
+
+-ABHUDWidget.cpp 소스코드에서
+BindCharacterStat함수
+현재 캐릭터 스텟을 인자값 캐릭터 스텟으로 바꾸고
+그 캐릭터스텟의 OnHPChanged 델리게이트에 UPdateCharaterStat 함수 바인딩추가.
+BindPlayerState 함수
+현재캐릭터상태를 인자값 캐릭터 상태로 바꾸고
+그 캐릭터 상태 OnPlayerStateChanged 델리게이트에 UpdatePlayerState 함수 바인딩추가.
+NativeConstruct 함수
+UI와 플레이어스테이트와 캐릭터스텟을 연동하기 위해
+변수로 선언한 프로그레스바와 텍스트블록을 정의?지정?(정확한 의미를 모르겠음).
+UpdateCharacterStat 함수
+현재캐릭터스텟에서 가져온 체력 비율로 HPBar 퍼센트 세팅.
+UpdatePlayerState 함수
+현재플레이어상태에서 가져운 경험치 비율로 ExpBar 퍼센트 세팅하고
+현재플레이어상태에서 가져운 이름, 레벨, 게임스코어로 각각의 텍스트블록 세팅한다.
+
+
+-ABPlayerController.h 헤더파일에서
+생성자 선언, GetHUDWidget 함수 선언,
+NPCKill 함수선언,
+UABHUDWidget 타입 HUDWidget 변수 선언,
+서브클래스UABHUDWidget 타입 HUDWidgetClass 변수 선언,
+AABPlayerState타입 ABPlayerState 변수 선언
+
+-ABPlayerController.cpp 소스코드에서
+생성자에서 콘스트럭터헬퍼를 통해 HUDWidgetClass의 에셋을 지정한다.
+GetHUDWidget 함수 HUD 위젯을 반환.
+NPCKill 함수 죽인 NPC에 캐릭터 클래스에서 경험치를 받고 현재 플레이어에게 경험치를 추가한다. 
+BeginPlay 함수에서
+HUD 위젯을 생성하고 뷰포트에 추가하고 ABPlayerState를 지정한 후
+HUD 위젯에 ABPlayerState를 바인딩한 후 ABPlayerState의 OnPlayerStateChanged 브로드캐스트함.
+(HUD위젯에 PlayerState를 동기화하기 위해 데이터를 바인딩한 후 업데이트 한 것임)
+
+
+-ABCharacterStatComponent.h 헤더파일에서
+GetDropExp 함수 선언.
+
+-ABCharacterStatComponent.cpp 소스코드에서
+GetDropExp 함수 현재 캐릭터스텟데이터에서 DropExp를 반환.
+
+
+-ABCharacter.h 헤더파일에서
+GetExp 함수 선언.
+
+-ABCharacter.cpp 소스코드에서
+플레이어의 레벨 정보를 반영할 SetCharacterState 함수에
+로딩 상태 부분에서 현재 플레이어의 플레이어상태에 접근해 레벨을 얻어오고
+그 레벨로 스탯컴포넌트의 레벨을 세팅하는 코드 추가.
+GetExp 함수
+캐릭터스테에서 GetDropExp 함수 호출 후 반환.
+TakeDamage 함수 수정
+기존 로그 지우고
+현재 상태가 데드이고 EventInstigator(가해자)가 플레이어컨트롤러가 맞다면
+플레이어컨트롤러의 NPCKill(NPC 캐릭터 자기자신) 호출-해당 가해자에게 경험치추가하는 함수호출.

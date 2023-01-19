@@ -12,6 +12,8 @@
 #include "ABCharacterSetting.h"
 #include "ABGameInstance.h"
 #include "ABPlayerController.h"
+#include "ABPlayerState.h"
+#include "ABHUDWidget.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -178,6 +180,12 @@ void AABCharacter::SetCharacterState(ECharacterState NewState)
 			if(bIsPlayer)
 			{
 				DisableInput(ABPlayerController);
+
+				ABPlayerController->GetHUDWidget()->BindCharacterStat(CharacterStat);
+
+				auto ABPlayerState=Cast<AABPlayerState>(GetPlayerState());
+				ABCHECK(nullptr!=ABPlayerState);
+				CharacterStat->SetNewLevel(ABPlayerState->GetCharacterLevel());
 			}
 			
 			SetActorHiddenInGame(true);
@@ -252,6 +260,11 @@ void AABCharacter::SetCharacterState(ECharacterState NewState)
 ECharacterState AABCharacter::GetCharacterState() const
 {
 	return CurrentState;
+}
+
+int32 AABCharacter::GetExp() const
+{
+	return CharacterStat->GetDropExp();
 }
 
 // Called when the game starts or when spawned
@@ -408,11 +421,17 @@ float AABCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	AActor* DamageCauser)
 {
 	float FinalDamage=Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	ABLOG(Warning, TEXT("Actor : %s took Damage : %f"), *GetName(), FinalDamage);
-
 	
-
 	CharacterStat->SetDamage(FinalDamage);
+	if(CurrentState==ECharacterState::DEAD)
+	{
+		if(EventInstigator->IsPlayerController())
+		{
+			ABPlayerController=Cast<AABPlayerController>(EventInstigator);
+			ABCHECK(nullptr!=ABPlayerController, 0.0f);
+			ABPlayerController->NPCKill(this);
+		}
+	}
 	return FinalDamage;
 }
 
