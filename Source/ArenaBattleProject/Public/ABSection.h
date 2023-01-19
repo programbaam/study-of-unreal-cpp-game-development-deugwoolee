@@ -41,6 +41,9 @@ private:
 
 	void OnNPCSpawn();
 
+	UFUNCTION()
+	void OnKeyNPCDestroyed(AActor* DestoryedActor);
+
 private:
 	UPROPERTY(VisibleAnywhere, Category=Mesh, meta=(AllowPrivateAccess=true))
 	TArray<UStaticMeshComponent*> GateMeshes;

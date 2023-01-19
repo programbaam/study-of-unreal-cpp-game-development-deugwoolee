@@ -1385,3 +1385,63 @@ TakeDamage 함수 수정
 기존 로그 지우고
 현재 상태가 데드이고 EventInstigator(가해자)가 플레이어컨트롤러가 맞다면
 플레이어컨트롤러의 NPCKill(NPC 캐릭터 자기자신) 호출-해당 가해자에게 경험치추가하는 함수호출.
+
+### 게임 데이터의 관리
+
+-ABGameState.h
+생성자 선언,
+GetTotalGameScore 함수 선언,
+AddGameScore 함수 선언,
+int32 타입 TotalGameScore 변수 선언.
+-ABGameState.cpp
+생성자에 TotalGameScroe를 0으로 지정.
+GetTotalGameScore 함수에서 TotalGameScroe 반환.
+AddGameScore 함수 호출 시 TotalGameScroe++해줌.
+
+
+-ABPlayerController.h
+AddGameScore 함수 선언.
+-ABPlayerController.cpp
+AddGameScore 함수 호출 시 플레이어스테이트에서 AddGameScore호출.
+
+
+-ABPlayerState.h
+AddGameScore 함수 선언.
+-ABPlayerState.cpp
+AddGameScore 함수 
+GameScore++ 한 후 OnPlayerStateChanged를 브로드캐스트함.
+
+
+-ABGameMode.h
+PostInitializeComponents() 함수 선언,
+AddScore 함수 선언,
+AABGameState 타입 ABGameState 변수 선언.
+
+-ABGameMode.cpp
+생성자에 GamStateClass 지정 추가.
+PostInitializeComponents() 함수
+선언한 ABGameState 지정.
+AddScore 함수
+월드를 통해 현재 게임에 참여 중인 플레이어 컨트롤러의 목록을 제공하는
+GetPlayerControllerIterator를 이용해 for 문을 돌려
+플레이어 컨트롤러를 임시로 받아와 캐스팅한 후
+이 받아온 값이 널이 아니고 인자값과 같다면
+그 컨트롤러에 AddGameScore 함수를 호출하고
+게임상태에 AddGameScore를 호출한다.
+
+
+-ABSection.h
+OnKeyNPCDestroyed 함수 선언.
+-ABSection.cpp
+OnNPCSpawn 함수에서
+월드 타임매니저에서 SpawnNPCTimerHandle이 다루는 타이머를 지운다.
+NPC 캐릭터를 스폰하고 
+NPC가 파괴딜시 OnDestroyed 델리게이트에 OnKeyNPCDestroyed 함수를 바인딩한다.
+
+OnKeyNPCDestroyed 함수에서
+파괴된 액터를 캐릭터 클래스로 캐스팅하고
+캐릭터를 마지막 때린 대상에 플레이어컨트롤러도 받아오고
+현재 캐스팅된 게임모드를 가져와서
+게임모드 AddScore(마지막에 때린 플레이어컨트롤러)를 호출한다.
+(NPC가 파괴되면 NPC를 죽인 플레이어컨트롤러에 게임스코어가 증가한다) 
+
