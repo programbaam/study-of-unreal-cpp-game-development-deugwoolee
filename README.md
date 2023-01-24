@@ -1445,3 +1445,45 @@ OnKeyNPCDestroyed 함수에서
 게임모드 AddScore(마지막에 때린 플레이어컨트롤러)를 호출한다.
 (NPC가 파괴되면 NPC를 죽인 플레이어컨트롤러에 게임스코어가 증가한다) 
 
+## Ch15. 게임의 완성
+
+### 게임 데이터의 저장과 로딩
+
+게임 세이브 기능에는 각 저장 파일에 접근할 수 있는 고유 이름인 슬롯 이름이 필요함.
+
+Player1이라는 슬롯 이름을 사용해 하나의 세이브 파일만 관리한다.
+
+처음에는 세이브된 게임 데이터가 없으므로 기본 세이브 데이터를 생성하는 로직을 플레이어 스테이트의 InitPlayerData에 구현함.
+
+-부모가 SaveGame 클래스인 C++ ABSaveGame 클래스 생성 
+
+-ABSaveGame.h 헤더파일에서
+생성자 선언, int32 타입 Level, Exp, HighScore 변수 선언,
+FString 타입 PlayerName 선언.
+-ABSaveGame.cpp 소스코드에
+생성자에서 Level은 값 1로, Exp는 0으로, PlayerName은 Guest, HighScore는 0으로 지정.
+
+-ABPlayerState.h 헤더파일에서
+GetGameHighScore 함수 선언 추가, FString 타입 SaveSlotName 변수 선언 추가,
+SavePlayerData() 함수 선언 추가, int32 타입 GameHighScore 변수 선언 추가.
+-ABPlayerState.cpp 소스코드에서
+생성자에서 GameHighScore는 0으로, SaveSlotName은 Player1으로 지정하는 코드 추가.
+GetGameHighScore 함수 GameHighScore를 반환하게 정의함.
+AddExp 함수에서 브로드캐스트 후 SavePlayerData 함수 호출하는 코드 추가.
+
+AddGameScore 함수에서 게임스코어를 증가 후 최고점수보다 현재게임스코어가 높다면
+최고 스코어를 현재게임스코어로 변경하는 로직 추가 후 브로드 캐스트 후 
+SavePlayerData 함수 호출하는 코드 추가.
+
+기본 세이브 데이터를 생성하는 InitPlayerData 함수에서
+Player1 슬롯을 로드하고 널포인터이면 UABSaveGame 클래스의 변경 가능한 기본 객체를 가져와 지정하고
+플레이어스테이트의 이름과 레벨을 로드하거나 생성한 SaveGame의 이름과 레벨로 지정한 후
+게임스코어는 0으로 지정하고 최고 점수와 경험치도 SaveGame의 최고 점수와 경험치로 지정한다. 
+
+플레이어 관련된 데이터가 변경될 때마다 이를 저장하기 위한 SavePlayerData 함수에서
+임시 세이브게임 클래스를 선언하고 객체 생성 후 스테이트의 이름, 레벨, 경험치, 최고점수로 객체의 멤버변수를 지정하고
+SaveSlotName이 가리키는 슬롯에 저장한다. 
+
+-ABHUDWidget.cpp 소스코드에서
+UPdatePlayerState 함수에서 플레이어 스테이트의 하이스코어 값을 HUD UI에 연동시키는 코드 추가.
+
