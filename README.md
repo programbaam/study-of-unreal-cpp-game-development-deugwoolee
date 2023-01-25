@@ -1487,3 +1487,48 @@ SaveSlotName이 가리키는 슬롯에 저장한다.
 -ABHUDWidget.cpp 소스코드에서
 UPdatePlayerState 함수에서 플레이어 스테이트의 하이스코어 값을 HUD UI에 연동시키는 코드 추가.
 
+### 전투 시스템의 설계
+
+-ABWeapon.h 헤더파일에서
+GetAttackRange 함수 선언, GetAttackDamage 함수 선언, GetAttackModifier 함수 선언,
+무기 속성을 추가하기 위한 float 타입 AttackRange, AttackDamageMin, AttackDamageMax,
+AttackModifierMin, AttackModifierMax, AttackDamge, AttackModifier 변수 선언. 
+-ABWeapon.cpp 소스코드에서
+생성자에서 무기 속성에 대한 공격범위 150.0f, 
+무기에 랜덤한 순수 공격력과 효과치 속성 설정하기 위한 
+공격데미지최소 -2.5f, 최대 10.0f, 공격모디파이어(수식)최소 0.85f, 최대 1.25f로 지정.
+GetAttackRange 함수는 AttackRange 반환하게 정의.
+GetAttackDamage 함수는 AttackDamage 반환하게 정의.
+GetAttackModifier 함수는 AttackModifier 반환하게 정의.
+BeginPlay 함수에 Min과 Max안에 랜덤한 숫자 뽑아
+AttackDamage와 Modifier 지정하는 로직 추가. 
+
+-BTDecorator_IsInAttackRange.cpp 소스코드에서
+CalculateRawConditionValue 함수 수정
+ControllingPawn에 지정된 클래스를 AABCharacterz클래스로 캐스트한 후 지정되게하고
+bResult가 200보다 작거나 같은 값이 아닌 ControllingPawn의 GetFinalAttackRange 함수 호출 
+반환값보다 작거나 같은 로직으로 변경.
+
+-ABGameMode.h 헤더파일에서
+GetScore 함수 선언.
+-ABGameMode.cpp 소스코드에서
+GetScore 함수는 게임스테이트에서 GetTotalGameScore 함수를 호출해서 반환 값을 반환하게 함.
+
+-ABCharacter.h 헤더파일에서
+GetFinalAttackRange 함수 선언, GetFinalAttackDamage 함수 선언.
+-ABCharacter.cpp 소스코드에서
+생성자 AttackRange 값 80 지정-무기가 없는 기본 캐릭터 공격 범위 줄임.
+SetCharacterState 함수에서 캐릭터 상태가 로딩이고 플레이어가 아니라면
+현재 게임스코어(지나온 스테이지)*0.8f의 해당하는 인트값으로 NPC 레벨을 세팅.-깨면 깰수록 적 레벨 상승.
+GetFinalAttackDamage 함수 현재 무기포인터가 널이면 현재사정거리를 아니면 무기사정거리를 반환.
+GetFinalAttackModifier 함수 현재 무기포인터가 널이 아니면 캐릭터공격력과 무기공격력을 더하고 
+무기의 공격모디파이어를 가져오고 아니라면 캐릭터의 공격력과 기본모디파이어 값을 1.0f로 세팅 한 후
+공격데미지에 모디파이어를 곱한 값을 반환.
+CanSetWeapon 함수 수정-항상 무기들이 속성이 랜덤이기에 무기 세팅 가능은 true로 반환하도록 수정. 
+SetWeapon 함수 수정-현재 무기가 널이 아니라면 현재 무기를 소멸시키고 널을 가리키게 함.
+AttackCheck 함수 수정-지역 변수 float 타입 FinalAttackRange 변수 선언하고 GetFinalAttackRange 호출 후 반환값으로 지정
+함수안에서 기존 AttackRange 변수가 들어가는 자리를 FinalAttackRange로 변경.
+
+게임 실행 중에 게임 모드의 포인터 가져올 때는 월드의 GetAuthGameMode 함수를 사용.
+멀티 플레이 게임에서 게임 모드는 게임을 관리하는 방장 역할을 하며 게임에서 중요한 데이터를 인증하는 권한 가짐.
+
