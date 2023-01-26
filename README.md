@@ -1532,3 +1532,103 @@ AttackCheck 함수 수정-지역 변수 float 타입 FinalAttackRange 변수 선
 게임 실행 중에 게임 모드의 포인터 가져올 때는 월드의 GetAuthGameMode 함수를 사용.
 멀티 플레이 게임에서 게임 모드는 게임을 관리하는 방장 역할을 하며 게임에서 중요한 데이터를 인증하는 권한 가짐.
 
+### 타이틀 화면의 제작
+
+예제코드 Resource>Chapter15>Book>UI>UI_Title.usasset 파일 추가
+새 레벨>빈 레벨 생성 후 Title이라는 이름으로 저장.
+Title 레벨에서만 사용할 UI를 띄울 PlayerController를 부모로 하는
+C++ ABUIPlayerController 클래스 생성.
+-ABUIPlayerController.h 헤더파일에서
+BeginPlay함수 선언, TSubClassOf<UUserWidget> 타입 UIWidgetClass 선언, UUserWidget 타입 UIWidgetInstance 선언.
+-ABUIPlayerController.cpp 소스코드에서
+BeginPlay함수 정의
+부모 BeginPlay함수 호출, 멤버 변수의 UI 인스턴스를 생성하고, 이를 뷰포트에 띄우고(AddToViewport),
+입력은 UI에만 전달하도록 로직을 구현.-이 클래스를 블루프린트로 상속받아 UI만 지정해주면 된다.
+
+ABUIPlayerController 클래스를 부모로 갖는 블루프린트 클래스 BP_TitleUIPlayerController 생성
+디테일>UI>UIWidgetClass를 UI_Title로 지정.
+플레이어 컨트롤러 띄울 게임모드를 Game Mode Base를 부모로 갖는 블루프린트 BP_TitleGameMode 생성
+디테일>클래스>Player Controller Class를 BP_TitleUIPlayerController로 지정
+디폴트 폰 클래스는 아무 기능이 없는 Pawn 으로 지정.
+Title 레벨의 월드 세팅>Game Mode>게임모드 오버라이드를 BP_TitleGameMode로 지정.
+
+예제코드 Resource>Chapter15>Book>UI>UI_Select.usasset 파일 추가
+예제코드 Resource>Chapter15>Book>Maps>Select.umap 파일 추가
+ABUIPlayerController 클래스를 부모로 갖는 블루프린트 클래스 BP_SelectUIPlayerController 생성
+디테일>UI>UIWidgetClass를 UI_Select로 지정.
+플레이어 컨트롤러 띄울 게임모드를 Game Mode Base를 부모로 갖는 블루프린트 BP_SelectGameMode 생성
+디테일>클래스>Player Controller Class를 BP_SelectUIPlayerController로 지정
+디폴트 폰 클래스는 아무 기능이 없는 Pawn 으로 지정.
+Select 레벨의 월드 세팅>Game Mode>게임모드 오버라이드를 BP_SelectGameMode로 지정.
+
+버튼을 누를 때마다 스켈레탈 메시를 변경하는 기능을 구현하기 위한 UserWidget 클래스를 부모로 갖는
+ABCharacterSelectWidget C++ 클래스 생성
+-ABCharacterSelectWidget.h 헤더파일에서
+NextCharacter 함수 선언, NativeConstruct 함수 선언,
+int32 타입 CurrentIndex, MaxIndex 변수 선언, TWeakObjectPtr<USkeletalMeshComponent> 타입 TargetComponent 선언,
+UButton 타입 PrevButton, NextButton, ConfirmButtom, UEditableTextBox 타입 TextBox 선언,
+OnPrevClicked 함수, OnNextClicked 함수, OnConfirmClicked 함수 선언. 
+-ABCharacterSelectWidget.cpp 소스코드에서
+NextCharacter 함수 정의
+인자값 bForward 함수 트루면 CurrentIndex 1 증가, false면 1 감소하고
+캐릭터세팅과 게임인스턴스를 이용하여 현재 인덱스가 가리키는 스켈레탈 메시 에셋을 가져와
+타겟컴포넌트를 가져온 에셋으로 지정. 
+
+NativeConstruct 함수 정의
+부모함수 호출 후 현재 인덱스 0으로 지정
+캐릭터세팅 생성 후 최대인덱스 값을 캐릭테에셋들의 숫자로 지정
+월드에 있는 스켈레탈메시액터를 찾아 그 액터의 스켈레탈메시 컴포넌트를 타겟컴포넌트로 지정
+버튼과 텍스트박스들을 위젯에 해당 값들로 지정
+버튼들에 해당하는 함수들 바인딩해준다.
+
+OnPrevClicked 함수 정의-NextCharacter함수를 인자값 false 넣어 호출.
+OnNextClicked 함수 정의-NextCharacter함수를 인자값 true 넣어 호출.
+OnConfirmClicked 함수 정의
+캐릭터 이름을 텍스트 박스에 적힌 문자열로 지정,
+새로운 세이브게임 만들고 플레이어데이터로 짓고
+해당 멤버 변수들 초기값 지정해주고 플레이어스테이트를 기본값으로 얻고
+게임을 저장하고 게임플레이 레벨을 연다.
+
+UI_Select 애셋의 부모클래스를 ABCharacterSelectWidget으로 변경
+
+-ABSaveGame.h 헤더파일에서 
+int32 타입 CharacterIndex 변수 선언.
+-ABSaveGame.cpp
+생성자에서 CharacterIndex를 0으로 지정 코드 추가.
+
+-ABCharacterSelectWidget.cpp 소스코드에서
+생성자에서 CharacterIndex를 0으로 지정 코드 추가.
+
+-ABPlayerState.h
+GetCharacterIndex 함수 선언, int32 타입의 CharacterIndex 변수 선언.
+-ABPlayerState.cpp
+생성자에서 CharacterIndex를 0으로 지정하는 코드 추가.
+GetCharacterIndex 함수 CharacterIndex 반환하게 정의.
+InitPlayerData 함수 캐릭터인덱스도 세이브게임에서 얻는 로직 추가.
+SavePlayerData 함수 플레이어데이터에 캐릭터 인덱스를 플레이어스테이트의 캐릭터인덱스로 하는 로직 추가.
+
+-ABCharacter.cpp 소스코드에서
+BeginPlay함수에서 플레이어면 에셋인덱스를 4로 했던 것을 플레이어스테이트에서 캐릭터 인덱스로 하는 로직으로 변경.
+
+프로젝트 세팅>프로젝트>맵&모드>Default Maps>에디터 시작 맵과 게임 기본 맵을 Title로 변경.
+
+
+
+UEditalbeTextBox 오타 UEditableTextBox인데 albe라고 able인데 오타 조심.
+
+
+
+버튼을 눌러도 캐릭터가 변하지 않는 문제 발생
+
+```
+bForward ? CurrentIndex : CurrentIndex++;
+```
+
+NextCharacter 함수에서 현재 인덱스를 증가 시키는 부분이 잘못되었음.
+
+```
+bForward ? CurrentIndex++ : CurrentIndex--;
+```
+
+
+
