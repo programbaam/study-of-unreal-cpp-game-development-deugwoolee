@@ -117,7 +117,7 @@ AABCharacter::AABCharacter()
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> IMC_KEYBOARD_AB(TEXT("/Game/Book/Input/IMC_Keyboard_AB.IMC_Keyboard_AB"));
 	if(IMC_KEYBOARD_AB.Succeeded())
 	{
-		KeboardMappingContext=IMC_KEYBOARD_AB.Object;
+		KeyboardMappingContext=IMC_KEYBOARD_AB.Object;
 	}
 
 
@@ -252,9 +252,11 @@ void AABCharacter::SetCharacterState(ECharacterState NewState)
 
 			GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda([this]()->void
 			{
+				GetWorld()->GetTimerManager().ClearTimer(DeadTimerHandle);
+				
 				if(bIsPlayer)
 				{
-					ABPlayerController->RestartLevel();
+					ABPlayerController->ShowResultUI();
 				}
 				else
 				{
@@ -310,11 +312,12 @@ void AABCharacter::BeginPlay()
 			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 			{
 				// PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings.
-				Subsystem->ClearAllMappings();
+				Subsystem->RemoveMappingContext(DefaultMappingContext);
+				Subsystem->RemoveMappingContext(KeyboardMappingContext);
 			
 				// Add each mapping context, along with their priority values. Higher values outprioritize lower values.
 				Subsystem->AddMappingContext(DefaultMappingContext, 0);
-				Subsystem->AddMappingContext(KeboardMappingContext, 100);
+				Subsystem->AddMappingContext(KeyboardMappingContext, 100);
 			
 			}
 		}

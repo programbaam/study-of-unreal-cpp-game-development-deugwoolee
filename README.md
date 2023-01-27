@@ -1632,3 +1632,108 @@ bForward ? CurrentIndex++ : CurrentIndex--;
 
 
 
+### 게임의 중지와 결과 화면
+
+예제코드 Resource>Chapter15>Book>UI>UI_Result.usasset, UI_Menu.usasset 파일 추가
+입력액션 IA_GamePasuse_AB 생성, 플레이어컨트롤러 전용 입력매핑컨텍스트 IMC_PlayerController_AB 생성.
+
+-ABCharacter.cpp
+BeginPlay 함수 플레이어이면 플레이어컨트롤러 서브시스템에 입력매핑컨텍스트를 추가하는 로직에서
+추가 전에 ClearAllMappings 과정을 없애고 RemoveMppaingContext로 DefaultMappingContext와 KeboardMappingContext
+제거하는 과정으로 바꾼다.-플레이어컨트롤러에서 할당한 입력매핑 사라지는 걸 방지하기 위해서다.
+
+-ABPlayerController.h
+UInputAction 타입 GamePauseAction 선언, UInputMappingContext 타입 PlayerControllerMappingContext 선언,
+SetupInputComponent 함수 선언, OnGamePause 함수 선언.
+-ABPlayerController.cpp
+생성자에서 GamePauseAction과 PlayerControllerMappingContext에 대한 애셋 지정.
+SetupInputComponent함수 정의
+부모 함수 호출하고 인풋컴포넌트를 향상된입력으로 캐스팅하고 입력 액션에 OnGamePause 함수 바인딩.
+BeginPlay 함수에서 서브시스템에 모든매핑지우고 PlayerControllerMappingContext 추가하는 로직 구현.
+
+UserWidget 클래스를 부모로 갖는 ABGameplayWidget C++ 클래스 생성.
+UI_Menu 애셋의 부모 클래스를 ABGameplayWidget으로 변경.
+
+-ABGameplayWidget.h 헤더파일에서
+NativeConstruct 함수 선언, OnResumeClicked 함수 선언, OnReturnToTitleClicked 함수 선언,
+OnRetryGameClicked 함수 선언, UButton 타입 ResumeButton, ReturnToTitleButton, RetryGameButton 선언.
+-ABGameplayWidget.cpp 소스코드에서
+NativeConstruct 함수 정의
+ResumeButton, ReturnToTitleButton, RetryGameButton의 위젯에 해당하는 버튼으로 지정하고
+해당 버튼에 해당하는 OnResumeClicked 함수, OnReturnToTitleClicked 함수, OnRetryGameClicked 함수들을
+바인딩한다.
+OnResumeClicked 함수 정의 현재소유중인 플레이어의 플레이어컨트롤러를 통해 RemoveFromParent() 함수를 통해
+상위위젯에 지금 위젯을 제거하고 입력모드를 변경하고 Pause를 풀어 게임을 재개한다.
+OnReturnToTitleClicked 함수 정의 호출 시 Title 레벨 오픈.
+OnRetryGameClicked 함수 정의 호출 시 현재소유중인 플레이어의 플레이어컨트롤러를 통해 레벨을 재시작한다.
+
+ABGameplayWidget 클래스를 부모로 갖는 ABGameplayResultWidget C++ 클래스 생성.
+
+-ABGameplayResultWidget.h
+BindGameState 함수 선언, NativeConstruct 함수 선언, TWeakObjectPtr<class AABGameState> 타입 CurrentGameState 선언.
+-ABGameplayResultWidget.cpp
+BindGameState 함수 정의 현재게임상태를 인자값으로 받은 GameState로 지정.
+NativeConstruct 함수 정의
+부모 함수 호출 후 
+위젯의 txtResult 텍스트 박스에 게임이 현재 게임상태를 통해 게임이 클리어 여부를 확인해 미션성공과 미션실패 텍스트를 지정,
+위젯의 txtTotalScore 텍스트박스에 현재 게임상태를 통해 총게임점수를 받고 텍스트로 지정.
+
+-ABGameState.h
+SetGameCleared 함수 선언, IsGameCleared 함수 선언,
+Int32타입 TotalGameScore 변수 선언, bool타입 bGameCleared 변수 선언. 
+-ABGameState.cpp
+생성자에서 bGameCleared 값 false로 지정.
+SetGameCleared 함수 정의 bGameCleared 값 true로 지정.
+IsGameCleared 함수 정의 bGameCleared 값 반환.
+
+-ABGameMode.h
+Int32타입 ScoreToClear 변수 선언.
+-ABGameMode.cpp
+생성자에서 ScoreToClear 값 2로 지정.-스코어가 2가 되면 클리어.
+AddScore 함수에서 
+GetScore 함수 호출한 값이 ScoreToClear 값보다 크거나 같으면
+게임상태에서 SetGameCleared 함수를 호출하고 월드에 폰들을 가져와 TurnOff 함수 호출.
+월드에서 플레이어함수를 가져와 ShowResultUI 함수 호출하는 로직 추가.
+
+-ABCharacter.cpp
+SetCharacterState 함수에서 DEAD 상태라면 DeadTimerHandle을 통해 타이머에 람다식 바인딩하는 부분 람다식에서
+DeadTimerHandle 핸들에 타이머를 지우는 로직으로 추가하고
+플레이어라면 RestartLevel()부분을 지우고 플레이어컨트롤러의 ShowResultUI() 함수를 호출하게 변경.-죽으면 레벨을 재시작하지 않고 UI를 띄움.
+
+-ABPlayerController.h
+ChangeInputMode 함수 선언, ShowResultUI 함수 선언, TSubclassOf<class UABGameplayWidget>타입 MenuWidgetClass 선언,
+TSubclassOf<class UABGameplayResultWidget> 타입 ResultWidgetClass 선언, UABGameplayWidget 타입 MenuWidget 선언,
+UABGameplayResultWidget 타입 ResultWidget 선언, FInputModeGameOnly 타입 GameInputMode 선언, FInputModeUIOnly 타입 UIInputMode 선언.
+-ABPlayerController.cpp
+생성자에서 MenuWidgetClass와 ResultWidgetClass 애셋 지정.
+ChangeInputMode 함수 정의 
+인자값 bGameMode가 true면 SetInputMode함수를 호출하고 GameInputMode 전달하고 마우스커서를 false로 함,
+bGameMode가 false면 SetInputMode함수를 호출하고 UIInputMode 전달하고 마우스커서를 true로 함.
+ShowResultUI 함수 정의 플레이어컨트롤러가 가진 게임상태를 ResultWidget에 바인드하고 뷰포트에 추가하고 ChangeInputMode를 false로 호출.
+OnGamePause 함수 정의 MenuWidget을 MenuWidgetClass통해 생성하고 지정하고 뷰포트에 추가 게임을 멈추고 ChangeInputMode를 false로 호출.
+BeginPlay 함수에서
+ChangeInputMode를 true로 호출하는 로직 추가 후
+ResultWidget을 ResultWidgetClass통해 생성하고 지정하고 Widget들에 대한 로그 추가.
+
+
+
+입력 매핑 컨테스트를 추가하였는 데
+
+```c++
+ConstructorHelpers::FObjectFinder<UInputMappingContext>
+```
+
+입력매핑컨텍스트를 반환하지 못하는 문제 발생
+
+```
+ConstructorHelpers.h(110): [C2664] 'void ConstructorHelpers::ValidateObject(UObject *,const FString &,const TCHAR *)': 인수 1을(를) 'T *'에서 'UObject *'(으)로 변환할 수 없습니다.
+```
+
+[[Unreal Engine 4\] Error - 'void ConstructorHelpers::ValidateObject(...) :인수 1을(를) 'T *'에서 'UObject *'(으)로 변환할 수 없습니다.' (tistory.com)](https://sheep-adult.tistory.com/41)
+
+```
+#include "InputMappingContext.h"
+```
+
+추가해서 문제 해결.
+

@@ -111,7 +111,7 @@ public:
 	class UInputMappingContext* DefaultMappingContext;
 
 	UPROPERTY(VisibleAnywhere, Category = Input)
-	class UInputMappingContext* KeboardMappingContext;
+	class UInputMappingContext* KeyboardMappingContext;
 	
 private:
 	void UpDown(const FInputActionValue& Value);
